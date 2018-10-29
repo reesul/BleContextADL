@@ -21,10 +21,7 @@ for i=1:length(k)
         cleanNumDev = copyDevice(key, occurrenceMap, recognizedDevices, cleanNumDev, cleanOccurrenceMap, cleanRecognizedDevices);
     end
         
-    
-    
 end
-
 
 
 end

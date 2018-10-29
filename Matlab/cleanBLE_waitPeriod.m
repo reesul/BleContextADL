@@ -46,6 +46,10 @@ function [cleanNumDev] = copyDevice(value, occurrenceMap, recognizedDevices, cle
 %about packet itself
 MACs = findMACs(value, recognizedDevices);
 
+if isempty(MACs) 
+    return;
+end
+
 for i=1:length(MACs)
     tmp = recognizedDevices(MACs{i});
     tmp('value') = cleanNumDev; %update value
@@ -54,9 +58,9 @@ for i=1:length(MACs)
 end
 
 %copy devices in occurrenceMap
-
-cleanNumDev = cleanNumDev + 1;
 cleanOccurrenceMap(cleanNumDev) = occurrenceMap(value);
+cleanNumDev = cleanNumDev + 1;
+
 
 end
 
