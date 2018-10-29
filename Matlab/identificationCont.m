@@ -12,7 +12,7 @@
 similarityThreshold = 0.75;
 
 load('identification.mat')
-dd=d;
+dd=d+1;
 
 
 datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\'
