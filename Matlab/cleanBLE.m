@@ -13,8 +13,7 @@ for i=1:length(k)
     key = k{i};
     occurrenceSet = occurrenceMap(key);
     if size(occurrenceSet,1)==1 || occurrenceSet(1,1) == occurrenceSet(end,1)
-        %cleanNumDev = copyDevice(key, occurrenceMap, recognizedDevices, cleanNumDev, cleanOccurrenceMap, cleanRecognizedDevices)
-        sprintf('device %d is no good, do not keep it', key);
+        sprintf('device %d is no good, do not keep it', key)
     elseif checkForBadMAC(badMACs, key, recognizedDevices)
         sprintf('device %d should specificially not be in the data, do not keep it', key);
     else
@@ -37,6 +36,10 @@ function [cleanNumDev] = copyDevice(value, occurrenceMap, recognizedDevices, cle
 %about packet itself
 MACs = findMACs(value, recognizedDevices);
 
+if isempty(MACs)
+    return;
+end
+
 for i=1:length(MACs)
     tmp = recognizedDevices(MACs{i});
     tmp('value') = cleanNumDev; %update value
@@ -44,10 +47,9 @@ for i=1:length(MACs)
     
 end
 
-%copy devices in occurrenceMap
-
-cleanNumDev = cleanNumDev + 1;
+%copy devices in occurrenceMa
 cleanOccurrenceMap(cleanNumDev) = occurrenceMap(value);
+cleanNumDev = cleanNumDev + 1;
 
 end
 
@@ -64,8 +66,8 @@ MACs = findMACs(values, recognizedDevices);
 
 
 %handle Ofos
-[~,values,~] = searchDeviceMap(recognizedDevices, searchField, searchValue)
-MACs = [MACs, findMACs(values, recognizedDevices))];
+%[~,values,~] = searchDeviceMap(recognizedDevices, searchField, searchValue)
+%MACs = [MACs, findMACs(values, recognizedDevices)];
 
 
 end

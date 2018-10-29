@@ -2,30 +2,28 @@ function [MAC, value, device] = searchDeviceMap(recognizedDevices, searchField, 
 
 keys = recognizedDevices.keys();
 
-MAC='null';
-value=-1;
-device = 'null';
+MAC={};
+value=[];
+device = {};
 
 if strcmp(searchField,'08') || strcmp(searchField,'09')
-    searchValue = upper(sprintf('%x', searchValue))
+    searchValue = upper(sprintf('%x', searchValue));
     
 end
 
 for i=1:length(keys)
     rd = recognizedDevices(keys{i});
     if isequal(rd(searchField), searchValue)
-       MAC = keys{i};
-       value = rd('value');
-       device = rd;
-       return;
+       MAC{end+1} = keys{i};
+       value(end+1) = rd('value');
+       device{end+1} = rd;
         
     end
     
     if strcmp(rd(searchField), searchValue)
-       MAC = keys{i};
-       value = rd('value');
-       device = rd;
-       return;
+       MAC{end+1} = keys{i};
+       value(end+1) = rd('value');
+       device{end+1} = rd;
 
     end
 
