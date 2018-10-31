@@ -13,7 +13,7 @@ dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
 
-for d=1:4
+for d=1:size(dataDirs,1)
     if contains(dataDirs(d,:),'-')
         blePath = strcat(datapath,strtrim(dataDirs(d,:)));
         blePath = strcat(blePath,'\');
@@ -23,8 +23,20 @@ for d=1:4
         [bleData,~] = formatBleData(blePath);
         [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognizedDevices, numUniqueDev, similarityThreshold);
         occurrenceMap = occurrenceIntervals(bleData, recognizedDevices, occurrenceMap, d);
+        
+        save('identificationProgress.mat', 'd', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap');
     end
     
 end
 
-save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap');
+
+macSet = cell(size(occurrenceMap))
+k=occurrenceMap.keys()
+for i=1:length(k)
+    kk = k{i};
+    macSet{i} = findMACs(kk, recognizedDevices);
+end
+
+save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap', 'macSet');
+
+delete identificationProgress.mat

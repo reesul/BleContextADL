@@ -2,6 +2,10 @@ function [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognized
 
 for b=1:length(bleData)
    pInfo = extractFields(bleData{b});
+   if isempty(pInfo) % this is the case if an empty packet is detected
+       continue;
+   end
+   
    MAC = pInfo('MAC');
    
    %if true, MAC has been seen before
@@ -35,7 +39,6 @@ for b=1:length(bleData)
        recognizedDevices(MAC) = pInfo;
    end
            
-   continue; %dummy, just use for breakpoint
 end  
 
 end
@@ -48,6 +51,11 @@ startMac = strfind(scan,'mac:{') + length('mac:{');
 MAC = scan(startMac: startMac+16);
 startpacket = strfind(scan,'raw_data:{') + length('raw_data:{');
 packet = scan(startpacket: end-1);
+
+if strcmp(packet,'00') %packet is empty for some reason; ignore these
+    packetInfo=[];
+    return;
+end
 
 %generalized format
 packetInfo = containers.Map;
@@ -193,8 +201,8 @@ for i=1:length(fields)
     
    %numAgree = numAgree + double(strcmp(device(fields{i}),newDevice(fields{i})));
    if (isIn(f,strictFields))
-       if strcmp(existingF, newF) %if a strict field is different, then we know this is not the same device
-           return;           
+       if ~strcmp(existingF, newF) %if a strict field is different, then we know this is not the same device
+           return;            
        end
        
    elseif (isIn(f,flexibleFields)) %compare these using a hamming distance
