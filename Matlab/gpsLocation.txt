@@ -1,2 +1,0 @@
-location,latitude,longitude
-home,30.612771,-96.298159 

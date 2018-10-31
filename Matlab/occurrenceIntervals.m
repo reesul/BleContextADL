@@ -2,7 +2,7 @@ function [occurrenceMap] = occurrenceIntervals(bleData, recognizedDevices, occur
 windowSize = 1000*60*3; %3 minutes
 
 winStart = bleTime(bleData{1});
-winStop = winStart+windowSize
+winStop = winStart+windowSize;
 
 queueLength = 4;
 queue = cell(1,queueLength); %give devices ~15 minutes grace period between occurrences

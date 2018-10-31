@@ -27,7 +27,7 @@ for d=1:size(dataDirs,1)
 end
 
 %% calculate an array describing the number of times each beacon shared a record with another beacon
-
+%todo make this array
 
 records = records'; %this is because dynamic allocation is most efficient along last dimension - however, preferred format is in which one row 
 
