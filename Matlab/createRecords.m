@@ -48,6 +48,7 @@ function[records] = createDaysRecords(bleData, timestamps, windowSize, numDevice
        if t>winEnd   %start new window i.e. new record 
            %save old record into 'records', begin a new one
            if i > 1
+               %todo add date
                records{1,end+1} = winStart;
                records{2,end} = br;
            end

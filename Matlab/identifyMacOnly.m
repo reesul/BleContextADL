@@ -2,7 +2,10 @@ function [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognized
 
 for b=1:length(bleData)
    pInfo = extractFields(bleData{b});
-   if isemptypInfo
+   if isempty(pInfo) % this is the case if an empty packet is detected
+       continue;
+   end
+   
    MAC = pInfo('MAC');
    
    %if true, MAC has been seen before
@@ -21,16 +24,16 @@ for b=1:length(bleData)
    else
        %try to calculate some similarity between pInfo and all devices seen
        %previously; highest value and corresponding MAC are returned
-       [similarity, existingMac] = findMatchBLE(pInfo, recognizedDevices);
+       %[similarity, existingMac] = findMatchBLE(pInfo, recognizedDevices);
        %threshold the similarity
-       if similarity >= similarityThreshold
-           pastDevice = recognizedDevices(existingMac); %assume this is the same device but with a new MAC
-           pInfo('value') = pastDevice('value'); %device will resolve to same value number (ID) as other MAC does
+       %if similarity >= similarityThreshold
+       %    pastDevice = recognizedDevices(existingMac); %assume this is the same device but with a new MAC
+       %    pInfo('value') = pastDevice('value'); %device will resolve to same value number (ID) as other MAC does
            
-       else %if no device is similar enough, append an entirely new one to the map
-           pInfo('value') = numUniqueDev; 
-           numUniqueDev = numUniqueDev+1;
-       end
+       %else %if no device is similar enough, append an entirely new one to the map
+       pInfo('value') = numUniqueDev; 
+       numUniqueDev = numUniqueDev+1;
+       %end
        
        pInfo('scanNum') = 1;
        recognizedDevices(MAC) = pInfo;
@@ -49,7 +52,7 @@ MAC = scan(startMac: startMac+16);
 startpacket = strfind(scan,'raw_data:{') + length('raw_data:{');
 packet = scan(startpacket: end-1);
 
-if strcmp(packet,'00')
+if strcmp(packet,'00') %packet is empty for some reason; ignore these
     packetInfo=[];
     return;
 end
@@ -198,8 +201,8 @@ for i=1:length(fields)
     
    %numAgree = numAgree + double(strcmp(device(fields{i}),newDevice(fields{i})));
    if (isIn(f,strictFields))
-       if strcmp(existingF, newF) %if a strict field is different, then we know this is not the same device
-           return;           
+       if ~strcmp(existingF, newF) %if a strict field is different, then we know this is not the same device
+           return;            
        end
        
    elseif (isIn(f,flexibleFields)) %compare these using a hamming distance

@@ -25,14 +25,17 @@ blefile = 'ble_data.txt';
 
 
 for d=1:size(dataDirs,1)
+    
+    
     if contains(dataDirs(d,:),'-')
         blePath = strcat(datapath,strtrim(dataDirs(d,:)));
         blePath = strcat(blePath,'\');
         blePath = strcat(blePath,blefile);
     
+        fprintf('Processing data from date: %s\n', dataDirs(d,:));
     
         [bleData,~] = formatBleData(blePath);
-        [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognizedDevices, numUniqueDev, similarityThreshold);
+        [recognizedDevices, numUniqueDev] = identifyMacOnly(bleData, recognizedDevices, numUniqueDev, similarityThreshold);
         occurrenceMap = occurrenceIntervals(bleData, recognizedDevices, occurrenceMap, d);
     end
     
@@ -58,7 +61,7 @@ end
 diary off
 
 %% Generate records based on set of good beacons
-[records, countArr] = createRecords(datapath,cleanDevices, 30*60*1000, cleanNumDev); % use 30 second interval for creating records
+[records, countArr] = createRecords(datapath,cleanDevices, 30*60*1000, cleanNumDev); % use 30 second interval for creating records; note, countArr not implemented yet - still just zeros
 
 %% Generate similarity matrix
 S = similarityBLE(cleanOMap);
