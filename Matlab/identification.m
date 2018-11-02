@@ -5,7 +5,7 @@
 
 recognizedDevices = containers.Map;
 occurrenceMap = containers.Map('KeyType', 'double', 'ValueType', 'any');
-similarityThreshold = 0.75;
+similarityThreshold = 0.9;
 numUniqueDev = 0;
 
 datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\'
