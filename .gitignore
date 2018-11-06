@@ -103,5 +103,5 @@ ENV/
 
 
 #Matlab
-.asv
+*.asv
 .zip
