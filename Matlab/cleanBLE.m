@@ -53,6 +53,7 @@ end
 %apply some prior knowledge to remove certain device
 function [MACs] = findSpecialDevices(recognizedDevices)
 
+fprintf('Search for devices we have prior knowledge on such that the device should be removed from data');
 [~, values, ~] = searchDeviceMap(recognizedDevices, '09', 'LG SJ4Y(E0)');
 MACs = findMACs(values, recognizedDevices);
 

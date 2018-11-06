@@ -17,7 +17,7 @@ date,start_time,end_time,activity,location
 8-28,11:10,11:20,biking,travel_bike
 8-28,12:35,13:55,class,classroom_wc
 8-28,13:55,14:10,biking,travel_bike
-8-28,14:10,15:35,class,classroom_etravel_bike
+8-28,14:10,15:35,class,classroom_etb
 8-28,15:40,15:55,eating,lab
 8-28,15:55,16:30,research,lab
 8-28,16:30,17:15,meeting,office_grad
@@ -32,7 +32,7 @@ date,start_time,end_time,activity,location
 8-29,20:20,22:00,relaxing,home
 8-30,7:55,8:05,driving,travel_car
 8-30,8:05,8:15,walking,travel_walk
-8-30,8:15,10:15,class,classroom_zach
+8-30,8:15,10:15,class,classroom_zach-1
 8-30,10:15,10:30,eating,null
 8-30,10:30,10:50,walking,travel_walk
 8-30,10:50,11:30,schoolwork,lab

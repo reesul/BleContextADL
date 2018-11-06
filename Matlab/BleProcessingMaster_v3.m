@@ -17,7 +17,7 @@ occurrenceMap = containers.Map('KeyType', 'double', 'ValueType', 'any');
 similarityThreshold = 0.9;
 numUniqueDev = 0;
 
-%% extract data from file
+%% extract data from file and perform identfication to resolve random MACs
 
 datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\20_day_set\'
 dataDirs = ls(datapath)
@@ -30,16 +30,36 @@ for d=1:size(dataDirs,1)
         blePath = strcat(blePath,'\');
         blePath = strcat(blePath,blefile);
     
-    
+        %reformat data into usable form; assumes a specific format
         [bleData,~] = formatBleData(blePath);
+        
         [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognizedDevices, numUniqueDev, similarityThreshold);
+        
         occurrenceMap = occurrenceIntervals(bleData, recognizedDevices, occurrenceMap, d);
+        
+        %save state due to the time complexity of this process
+        save('identificationProgress.mat', 'd', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap');
     end
     
 end
 
-save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap');
 
+macSet = cell(size(occurrenceMap));
+k=occurrenceMap.keys();
+for i=1:length(k)
+    kk = k{i};
+    macSet{i} = findMACs(kk, recognizedDevices);
+end
+
+%sort this for diagnostic purposes
+[~,I] = sort(cellfun(@length,macSet))
+macSet=macSet(I);
+clear I
+
+%save state - this section takes a very long time to process
+save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap', 'macSet');
+
+delete identificationProgress.mat
 %% Clean data
 [cleanOMap, cleanDevices, cleanNumDev] = cleanBLE(occurrenceMap, recognizedDevices, numUniqueDev);
 
@@ -58,11 +78,22 @@ end
 diary off
 
 %% Generate records based on set of good beacons
-[records, countArr] = createRecords(datapath,cleanDevices, 30*1000, cleanNumDev); % use 30 second interval for creating records
+[records, countArr, supportArr] = createRecords(datapath, cleanDevices, 30*1000, cleanNumDev); % use 30 second interval for creating records
 
-%% Generate similarity matrix
-S = similarityBLE(cleanOMap);
-[normS, posS] = normalizeSimilarity(S);
+% Use a threshold here to create a smaller set of 'good' records for
+% clustering; TODO try different threshold values
+% goodRecords = find(records{4,:} < threshold);
+% goodRecords = records(goodRecords);
+%% Generate similarity matrix and preference values
 
-%%Do clustering
-[x,Tclusters,OGclusters]=bleAPCluster(normS, 'damp', 0.5, 'clusterSize', 1, 'scalingFactor', 1);
+% Will need to attempt a grid search on the alpha and beta values
+alpha=1; beta=1;
+S = similarityRecords(records, alpha, beta);
+%[normS, posS] = normalizeSimilarity(S);
+
+% Generate preference values to alter clsuter distribution; default is
+% median of dataset as suggested by Affinity Propagation authors
+% P = generatePreferences(S, other_stuff); %TODO
+
+%% Do clustering and evaluate vs. data
+[x,Tclusters,OGclusters]=bleAPCluster(normS, 'damp', 0.9, 'clusterSize', 1, 'scalingFactor', 1);

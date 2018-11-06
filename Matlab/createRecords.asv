@@ -3,7 +3,7 @@ function [records, countArr, supportArr] = createRecords(datapath,recognizedDevi
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
-records = cell(3,0); %each record is a column here; first value is timestamp of record start, second is a binary vector corresponsding to beacon presence
+records = cell(4,0); %each record is a column here; first value is timestamp of record start, second is a binary vector corresponsding to beacon presence
 countArr = zeros(numDevices);
 supportArr = zeros(numDevices);
 
@@ -11,7 +11,7 @@ supportArr = zeros(numDevices);
 
 for d=1:size(dataDirs,1)
     if contains(dataDirs(d,:),'-')
-        fprintf("Processing %s\n", dataDirs(d,:)); 
+        fprintf("Processing data for date %s\n", dataDirs(d,:)); 
         blePath = strcat(datapath,strtrim(dataDirs(d,:)));
         blePath = strcat(blePath,'\');
         blePath = strcat(blePath,blefile);
@@ -29,9 +29,9 @@ end
 %% calculate an array describing the number of times each beacon shared a record with another beacon
 
 recordMtx = records(3,:);
-fprintf('record matrix size %d %d', size(recordMtx));
 recordMtx = cell2mat(recordMtx);
 recordMtx = reshape(recordMtx,[length(records),numDevices]);
+fprintf('record matrix size %d %d\n', size(recordMtx));
 
 %Make diagonal first - how many times records a beacon occurred in
 for i=1:numDevices
@@ -40,7 +40,7 @@ end
 
 %count how many times two beacons showed up together
 for i=1:numDevices
-    for j=(i+1):numDevices %graph is symmetric 
+    for j=(i+1):numDevices %support metric is symmetric, only loop over upper-right half of mtx from diagonal
         countArr(i,j) = sum(and(recordMtx(:,i),recordMtx(:,j))); %intersection; count records that both beacons were present in
         supportArr(i,j) = countArr(i,j) / (countArr(i,i) + countArr(j,j) - countArr(i,j)); %support value for record i vs. j; intersect over union 
         
@@ -48,12 +48,52 @@ for i=1:numDevices
 end
 
 
+%% calculate a CV value for each record
+% CV value is std/mean for beacon pairs (their support values) within a record
+
+nonNullSet = false(1,size(recordMtx,1)); %need to remove empty records
+for i=1:size(recordMtx,1)
+    %get distribution of support values
+    r = recordMtx(i,:);
+    
+    numBeacons = sum(r);
+    if numBeacons==0
+        continue;
+    end
+    
+    nonNullSet(i) = true;
+    if numBeacons==1
+        records{4,i} = 0; %only one beacon, std is 0, mean doesn't matter
+        continue;
+    end
+    
+    
+    pairs = zeros(1,nchoosek(numBeacons,2));
+    indexes = find(r);
+    pairsIndex = 1;
+    for j=1:(length(indexes)-1)
+        for k=(j+1):length(indexes)
+            pairs(pairsIndex) = supportArr(indexes(j),indexes(k));
+            pairsIndex = pairsIndex+1;
+        end
+    end
+    
+    records{4,i} = std(pairs)/mean(pairs);
+    
+end
+
+%% Remove empty records from the data, then sort based on ascending CV value
+records = records(:,find(nonNullSet));
+
+[~,sortInd] = sort([records{4,:}]);
+records = records(:,sortInd);
+
 end
 
 %% helper functions
 function[records] = createDaysRecords(bleData, timestamps, windowSize, numDevices, devices)
 
-    records = cell(3,0);
+    records = cell(4,0);
     blankRecord = false(1,numDevices);
     winStart = 0;
     winEnd = 0;
@@ -71,6 +111,8 @@ function[records] = createDaysRecords(bleData, timestamps, windowSize, numDevice
                records{1,end+1} = date;
                records{2,end} = winStart;
                records{3,end} = br;
+               %fourth element of records cell must be computed after some
+               %additional processing
            end
            
            %update variables for new window
@@ -95,7 +137,7 @@ end
 function [MAC,time,date] = getMacAndTime(bleScan)
 MAC = bleScan(31:47);
 time = bleScan(7:23);
-%time = fulldate2num(time); % This is necessary?
+%time = fulldate2num(time); % is necessary?
 time = date2num(time);
 date = bleScan(7:14);
 
