@@ -21,6 +21,12 @@ for b=1:length(bleData)
       
     %MAC has not been seen before; create new device entry, but it could be
     % an instance of a past device (i.e. MAC changes)
+   elseif ignoreBeacon(pInfo)
+       pInfo('value') = numUniqueDev; 
+       numUniqueDev = numUniqueDev+1;
+       
+       pInfo('scanNum') = 1;
+       recognizedDevices(MAC) = pInfo;
    else
        %try to calculate some similarity between pInfo and all devices seen
        %previously; highest value and corresponding MAC are returned
@@ -174,6 +180,7 @@ for i=1:length(keys)
     end    
 end
 
+
 %ignore this device (return) if non-equal number of fields
 if length(fields) ~= length(fieldsNew)
     return;    
@@ -301,4 +308,41 @@ for i=1:length(cellArr)
 end
 
 
+end
+
+%If this returns true, do not compare this beacon to others - just assume
+%that this new MAC is a unique device
+function [bool] = ignoreBeacon(pInfo)
+bool = true;
+
+%get the set of fields with non-null values for this MACs packet
+fields={};
+keys = pInfo.keys;
+for i=1:length(keys)
+    k = keys{i};
+    %ignore certain fields, since these should always be non-empty
+    if strcmp(k,'MAC') || strcmp(k,'value') || strcmp(k,'scanNum')
+        continue
+    end
+    
+    if ~isempty(pInfo(k))
+        fields{end+1} = k;
+    end
+end
+
+
+%nothing useful in the packet
+if isempty(fields)
+    return;
+%if the device name is the only thing present, ignore as this can be the
+%same among many different physical devices
+elseif length(fields)==1 && (~isempty(pInfo('09')) || ~isempty(pInfo('08')))
+    return;
+%if only manufacturer info in Apple format, ignore because too many devices
+%have little variation here for unique ID
+elseif ~isempty(pInfo('M-ID')) && ~isempty(pInfo('FF')) && length(fields)==2 && strcmp(pInfo('M-ID'),'4C00')
+    return;
+end
+
+bool = false;
 end

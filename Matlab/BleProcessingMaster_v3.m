@@ -19,7 +19,7 @@ numUniqueDev = 0;
 
 %% extract data from file
 
-datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\'
+datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\20_day_set\'
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
@@ -58,7 +58,7 @@ end
 diary off
 
 %% Generate records based on set of good beacons
-[records, countArr] = createRecords(datapath,cleanDevices, 30*60*1000, cleanNumDev); % use 30 second interval for creating records
+[records, countArr] = createRecords(datapath,cleanDevices, 30*1000, cleanNumDev); % use 30 second interval for creating records
 
 %% Generate similarity matrix
 S = similarityBLE(cleanOMap);

@@ -8,7 +8,8 @@ occurrenceMap = containers.Map('KeyType', 'double', 'ValueType', 'any');
 similarityThreshold = 0.9;
 numUniqueDev = 0;
 
-datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\'
+datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\Full\20_day_set\'
+datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\20_day_set\'
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
@@ -18,6 +19,8 @@ for d=1:size(dataDirs,1)
         blePath = strcat(datapath,strtrim(dataDirs(d,:)));
         blePath = strcat(blePath,'\');
         blePath = strcat(blePath,blefile);
+        
+        fprintf('Processing day of data for %s\n', dataDirs(d,:));
     
     
         [bleData,~] = formatBleData(blePath);

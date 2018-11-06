@@ -13,9 +13,9 @@ for i=1:length(k)
     key = k{i};
     occurrenceSet = occurrenceMap(key);
     if size(occurrenceSet,1)==1 || occurrenceSet(1,1) == occurrenceSet(end,1)
-        sprintf('device %d is no good, do not keep it', key)
+        fprintf('device %d is no good, do not keep it\n', key)
     elseif checkForBadMAC(badMACs, key, recognizedDevices)
-        sprintf('device %d should specificially not be in the data, do not keep it', key);
+        fprintf('device %d should specificially not be in the data, do not keep it\n', key);
     else
         %device is good, keep it
         cleanNumDev = copyDevice(key, occurrenceMap, recognizedDevices, cleanNumDev, cleanOccurrenceMap, cleanRecognizedDevices);
@@ -62,9 +62,9 @@ MACs = findMACs(values, recognizedDevices);
 % MACs = [MACs, (findMACs,V)];
 
 
-%handle Ofos
-%[~,values,~] = searchDeviceMap(recognizedDevices, searchField, searchValue)
-%MACs = [MACs, findMACs(values, recognizedDevices)];
+
+[~,values,~] = searchDeviceMap(recognizedDevices, '09', 'Tile');
+MACs = [MACs, findMACs(values, recognizedDevices)];
 
 
 end
