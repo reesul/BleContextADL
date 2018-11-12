@@ -11,6 +11,11 @@
 %
 %  v3: Build adjacency/similarity matrix out of BLE
 
+%% Options
+
+tryIdentification = true;
+
+
 %% Initial variable setup
 recognizedDevices = containers.Map;
 occurrenceMap = containers.Map('KeyType', 'double', 'ValueType', 'any');
@@ -33,8 +38,12 @@ for d=1:size(dataDirs,1)
         %reformat data into usable form; assumes a specific format
         [bleData,~] = formatBleData(blePath);
         
-        [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognizedDevices, numUniqueDev, similarityThreshold);
-        
+        if tryIdentification %attempt to resolve changing MAC addresses
+            [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognizedDevices, numUniqueDev, similarityThreshold);
+        else
+            [recognizedDevices, numUniqueDev] = identifyMacOnly(bleData, recognizedDevices, numUniqueDev, similarityThreshold);
+        end
+            
         occurrenceMap = occurrenceIntervals(bleData, recognizedDevices, occurrenceMap, d);
         
         %save state due to the time complexity of this process
@@ -44,20 +53,20 @@ for d=1:size(dataDirs,1)
 end
 
 
-macSet = cell(size(occurrenceMap));
-k=occurrenceMap.keys();
-for i=1:length(k)
-    kk = k{i};
-    macSet{i} = findMACs(kk, recognizedDevices);
-end
+% macSet = cell(size(occurrenceMap));
+% k=occurrenceMap.keys();
+% for i=1:length(k)
+%     kk = k{i};
+%     macSet{i} = findMACs(kk, recognizedDevices);
+% end
+% 
+% %sort this for diagnostic purposes
+% [~,I] = sort(cellfun(@length,macSet))
+% macSet=macSet(I);
+% clear I
 
-%sort this for diagnostic purposes
-[~,I] = sort(cellfun(@length,macSet))
-macSet=macSet(I);
-clear I
-
-%save state - this section takes a very long time to process
-save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap', 'macSet');
+%% save state - this section takes a very long time to process
+save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap');
 
 delete identificationProgress.mat
 %% Clean data
@@ -78,22 +87,35 @@ end
 diary off
 
 %% Generate records based on set of good beacons
-[records, countArr, supportArr] = createRecords(datapath, cleanDevices, 30*1000, cleanNumDev); % use 30 second interval for creating records
+records = createRecords(datapath, cleanDevices, 60*1000, cleanNumDev); % use 60 second interval for creating records
 
-% Use a threshold here to create a smaller set of 'good' records for
-% clustering; TODO try different threshold values
-% goodRecords = find(records{4,:} < threshold);
-% goodRecords = records(goodRecords);
+boxplot(cell2mat(records(4,:)));
+fprintf('Refer to the plot to select a good threshold value for CV of each record;\n lower values are better!\n\n');
+pause;
+
+%% Use a threshold here to create a smaller set of 'good' records for
+% clustering
+threshold=1.5; %threshold for CV values of each record
+goodRecords = filterRecords(records, 'numeric threshold', threshold);
 %% Generate similarity matrix and preference values
 
 % Will need to attempt a grid search on the alpha and beta values
 alpha=1; beta=1;
-S = similarityRecords(records, alpha, beta);
+S_AP = similarityRecords(goodRecords, alpha, beta);
 %[normS, posS] = normalizeSimilarity(S);
 
 % Generate preference values to alter clsuter distribution; default is
 % median of dataset as suggested by Affinity Propagation authors
 % P = generatePreferences(S, other_stuff); %TODO
 
-%% Do clustering and evaluate vs. data
-[x,Tclusters,OGclusters]=bleAPCluster(normS, 'damp', 0.9, 'clusterSize', 1, 'scalingFactor', 1);
+%% Do clustering and evaluate vs. data 
+% see function details to provide additional arguments
+[apOutput,~,clusters] = bleAPCluster(S_AP, length(S_AP), 'damp', 0.9);
+
+
+%% Combine records for clusters into a single "record" (bit-vector) describing the cluster
+% clusterReps are the set of binary vectors that represent which beacons
+% are in each cluster; clusterRecords is the set of full records (timestamp
+% included) for each cluster. Indexing is analagous between the two
+[clusterReps, clusterRecords] = organizeClusters(clusters, goodRecords);
+

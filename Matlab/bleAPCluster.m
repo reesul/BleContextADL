@@ -1,10 +1,10 @@
-function [apOutput, thresholdClusters, originalClusters] = bleAPCluster(S, varargin)
+function [apOutput, thresholdClusters, originalClusters] = bleAPCluster(S, N, varargin)
 
 %setup parameters
-damp=0.5; minClusterSize=15; scalingFactor=3;
+damp=0.9; minClusterSize=-1; scalingFactor=1; reformat = false; %some defaults
 i=1;
 while i<=length(varargin)
-    if strcmp(varargin{i}, 'clusterSize')
+    if strcmp(varargin{i}, 'Threshold size')
         minClusterSize = varargin{i+1};
         i=i+2;
     elseif strcmp(varargin{i}, 'scalingFactor')
@@ -13,16 +13,14 @@ while i<=length(varargin)
     elseif strcmp(varargin{i}, 'damp')
         damp=varargin{i+1};
         i=i+2;
+    elseif strcmp(varargin{i}, 'AP reformat')
+        reformat = true;
+        i=i+1;
     else
         i=i+1;
     end
     
-    
 end
-
-N=length(S);
-SAP = zeros(N^2-N, 3);
-
 
 %ignore, template
 % N=100; x=rand(N,2); % Create N, 2-D data points
@@ -35,7 +33,7 @@ SAP = zeros(N^2-N, 3);
 %   end;
 % end;
 % p=median(s(:,3)); % Set preference to median similarity
-
+SAP = zeros(N^2-N, 3);
 j=1;
 for i=1:N
     for k=[1:i-1,i+1:N]
@@ -45,46 +43,51 @@ for i=1:N
             SAP(j,3) = S(i,k);
             j=j+1;
         end
-        
+
     end
 end
 size(SAP)
+
 %resize based on j
 SAP = SAP(1:(j-1),:);
-
+medianPref=median(SAP(:,3))
+    
+if ~reformat
+    SAP = S;
+end
+    
 size(SAP)
 % SAP(:,3)=nonzeros(SAP(:,3))
 % size(SAP)
 
-m=median(SAP(:,3))
-P = m*ones(N,1)*scalingFactor;
+P = medianPref;%*ones(N,1)*scalingFactor; %Use scalar value if using median ONLY
 %S = S*scalingFactor;
 
-
-
-[idx,netsim,dpsim,expref]=apcluster(S,P, 'maxits', 1000, 'dampfact', damp, 'plot', 'nonoise');
+[idx,netsim,dpsim,expref]=apcluster(SAP,P, 'maxits', 2000, 'dampfact', damp, 'nonoise');
 
 apOutput = {idx,netsim,dpsim,expref};
 
 numClusters = length(unique(idx))
-originalClusters = cell(length(S),1);
+originalClusters = cell(length(idx),1);
 
-for i=1:N
-    c = idx(i);
+for i=1:length(idx)
+    c = idx(i); %cluster for node i
     originalClusters{c} = [originalClusters{c}, i];
 end
 
+originalClusters = originalClusters(~cellfun(@isempty,originalClusters)); % remove empty clusters from the set
+
+% Apply a minimum cluster size if applicable
 thresholdClusters = {};
-newOGclusters = {};
-for i=1:N
-    
-    if length(originalClusters{i}) > 0
-        newOGclusters{end+1} = originalClusters{i};
+if minClusterSize > 0
+    for i=1:length(originalClusters)
+
+        if length(originalClusters{i}) >= minClusterSize
+            thresholdClusters{end+1} = originalClusters{i};
+        end
+
     end
-    if length(originalClusters{i}) >= minClusterSize
-        thresholdClusters{end+1} = originalClusters{i};
-    end
-     
+    %numClusters = length(thresholdClusters)
 end
-numClusters = length(thresholdClusters)
-originalClusters = newOGclusters;
+    
+end

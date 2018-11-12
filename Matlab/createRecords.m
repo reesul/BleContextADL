@@ -1,4 +1,4 @@
-function [records, countArr, supportArr] = createRecords(datapath,recognizedDevices,windowSize, numDevices)
+function [records] = createRecords(datapath,recognizedDevices,windowSize, numDevices)
 
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
@@ -20,7 +20,7 @@ for d=1:size(dataDirs,1)
         newR = createDaysRecords(bleData, timestamps, windowSize, numDevices, recognizedDevices);
         
         records = [records, newR];
-        size(records)
+        size(records);
         
     end
     
@@ -28,12 +28,15 @@ end
 
 %% calculate an array describing the number of times each beacon shared a record with another beacon
 
+%TODO redo this portion, seems to be off
 recordMtx = records(3,:);
 recordMtx = cell2mat(recordMtx);
-recordMtx = reshape(recordMtx,[length(records),numDevices]);
+recordMtx = reshape(recordMtx,[numDevices,length(records)]);
+recordMtx = recordMtx'; %transpose so a single record is a row; (index as i,:) for whole record i
 fprintf('record matrix size %d %d\n', size(recordMtx));
 
-%Make diagonal first - how many times records a beacon occurred in
+%Make diagonal first - how many times records a beacon occurred in all
+%records
 for i=1:numDevices
     countArr(i,i) = sum(recordMtx(:,i));
 end
@@ -51,8 +54,8 @@ end
 %% calculate a CV value for each record
 % CV value is std/mean for beacon pairs (their support values) within a record
 
-nonNullSet = false(1,size(recordMtx,1)); %need to remove empty records
-for i=1:size(recordMtx,1)
+nonNullSet = false(1,size(records,2)); %need to remove empty records
+for i=1:size(records,2)
     %get distribution of support values
     r = recordMtx(i,:);
     
@@ -83,7 +86,7 @@ for i=1:size(recordMtx,1)
 end
 
 %% Remove empty records from the data, then sort based on ascending CV value
-records = records(:,find(nonNullSet));
+records = records(:,nonNullSet);
 
 [~,sortInd] = sort([records{4,:}]);
 records = records(:,sortInd);
