@@ -3,7 +3,7 @@ function [records] = createRecords(datapath,recognizedDevices,windowSize, numDev
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
-records = cell(4,0); %each record is a column here; first value is timestamp of record start, second is a binary vector corresponsding to beacon presence
+records = cell(5,0); %each record is a column here; first value is timestamp of record start, second is a binary vector corresponsding to beacon presence
 countArr = zeros(numDevices);
 supportArr = zeros(numDevices);
 
@@ -28,7 +28,6 @@ end
 
 %% calculate an array describing the number of times each beacon shared a record with another beacon
 
-%TODO redo this portion, seems to be off
 recordMtx = records(3,:);
 recordMtx = cell2mat(recordMtx);
 recordMtx = reshape(recordMtx,[numDevices,length(records)]);
@@ -88,15 +87,14 @@ end
 %% Remove empty records from the data, then sort based on ascending CV value
 records = records(:,nonNullSet);
 
-[~,sortInd] = sort([records{4,:}]);
-records = records(:,sortInd);
+
 
 end
 
 %% helper functions
 function[records] = createDaysRecords(bleData, timestamps, windowSize, numDevices, devices)
 
-    records = cell(4,0);
+    records = cell(5,0);
     blankRecord = false(1,numDevices);
     winStart = 0;
     winEnd = 0;
@@ -108,14 +106,25 @@ function[records] = createDaysRecords(bleData, timestamps, windowSize, numDevice
        t = timestamps(i);
        
        if t>winEnd   %start new window i.e. new record 
-           %save old record into 'records', begin a new one
+           %save old record into 'records', begin a new one 
            if i > 1
                %todo add date
                records{1,end+1} = date;
                records{2,end} = winStart;
                records{3,end} = br;
+               
+               %5th value is beacon turnover, which is 1 for the first
+               %record of the day (size==1), or if the time difference
+               %between window is larger than the window size (+10% due to
+               %BLE scanning characteristics
+               if (size(records,2)==1 || (winStart-records{2,end-1} > 1.1*windowSize))
+                   records{5,end} = 1;
+               else
+                   records{5,end} = beaconTurnover(records{3,end-1},br);
+               end
                %fourth element of records cell must be computed after some
                %additional processing
+               
            end
            
            %update variables for new window
@@ -140,7 +149,8 @@ end
 function [MAC,time,date] = getMacAndTime(bleScan)
 MAC = bleScan(31:47);
 time = bleScan(7:23);
-%time = fulldate2num(time); % is necessary?
+%time = fulldate2num(time); % is necessary? probably not, and time
+%complexity is horrendous
 time = date2num(time);
 date = bleScan(7:14);
 

@@ -17,7 +17,9 @@ elseif strcmp(varargin{1}, 'numeric threshold')
     threshold = varargin{2};
 end
     
-    
+% sort records based on CV value
+[~,sortInd] = sort([records{4,:}]);
+records = records(:,sortInd);
     
 if threshold ~= -1
     if usePercent
