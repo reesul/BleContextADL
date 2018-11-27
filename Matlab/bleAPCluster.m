@@ -51,6 +51,8 @@ size(SAP)
 %resize based on j
 SAP = SAP(1:(j-1),:);
 medianPref=median(SAP(:,3))
+
+minimumPref = min(SAP(:,3));
     
 if ~reformat
     SAP = S;
@@ -61,6 +63,7 @@ size(SAP)
 % size(SAP)
 
 P = medianPref;%*ones(N,1)*scalingFactor; %Use scalar value if using median ONLY
+P = minimumPref;
 %S = S*scalingFactor;
 
 [idx,netsim,dpsim,expref]=apcluster(SAP,P, 'maxits', 2000, 'dampfact', damp, 'nonoise');
