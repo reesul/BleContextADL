@@ -30,18 +30,20 @@ end
 
 function [fixedDate] = fixDate(date) 
 
-if strcmp(date(2),'-')
+date(end-3:end-2)='';
+
+if strcmp(date(2),'/')
     date = ['0',date];
 end
 
-if length(date) == 4
+if strcmp(date(5),'/')
     date = [date(1:3), '0', date(4:end)];
 end
 
-date(3) = '/';
+% date(3) = '/';
 
 fixedDate = date;
-fixedDate(end-3:end-2)='';
+% fixedDate(end-3:end-2)='';
 
 disp(fixedDate)
 end
