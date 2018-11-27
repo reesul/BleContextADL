@@ -40,7 +40,8 @@ end
 
 date(3) = '/';
 
-fixedDate = [date, '/18'];
+fixedDate = date;
+fixedDate(end-3:end-2)='';
 
 disp(fixedDate)
 end
