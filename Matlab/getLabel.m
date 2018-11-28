@@ -20,6 +20,4 @@ for i = 1:size(daysCells,1)
 
 end
 
-
-disp('getLabels done');
 end
