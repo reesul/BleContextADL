@@ -1,13 +1,13 @@
 date,start_time,end_time,activity,location
-8/27/2018,8:45,9:00,car,null
+8/27/2018,8:45,9:00,driving,null
 8/27/2018,9:15,10:30,exercising,gym
-8/27/2018,10:55,11:05,car,null
+8/27/2018,10:55,11:05,driving,null
 8/27/2018,11:10,12:30,meeting,lab
 8/27/2018,12:35,13:10,class,classroom_etb
 8/27/2018,13:40,14:05,eating,lab
 8/27/2018,14:05,17:45,research,lab
 8/27/2018,17:45,17:50,walking,null
-8/27/2018,17:50,18:05,car,null
+8/27/2018,17:50,18:05,driving,null
 8/27/2018,18:25,20:00,schoolwork,home
 8/27/2018,20:00,23:59,relaxing,home
 8/28/2018,8:30,8:40,driving,null
@@ -178,7 +178,7 @@ date,start_time,end_time,activity,location
 9/15/2018,14:05,18:00,social_event,social
 9/16/2018,12:15,12:30,driving,null
 9/16/2018,12:30,13:45,exercising,gym
-9/16/2018,14:00,14:15,drivign,null
+9/16/2018,14:00,14:15,driving,null
 9/17/2018,8:35,8:50,driving,null
 9/17/2018,8:50,8:55,walking,null
 9/17/2018,8:55,10:20,exercising,gym

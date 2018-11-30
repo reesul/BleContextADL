@@ -84,7 +84,7 @@ for i=1:size(records,2)
     
 end
 
-%% Remove empty records from the data, then sort based on ascending CV value
+%% Remove empty records from the data
 records = records(:,nonNullSet);
 
 

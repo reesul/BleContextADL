@@ -1,6 +1,6 @@
 %create .arff file for Weka
 
-dataPath = 'C:\Users\reesul\Documents\Nearables\Extracted Data\';
+dataPath = 'C:\Users\reesul\Documents\Activity_Recognition\Processing\\';
 arffFileName = strcat(dataPath,'data_imu.arff');
 %if .arff file is already there, just delete it so it doesn't show in files
 if (fopen(arffFileName, 'r') ~= -1)
