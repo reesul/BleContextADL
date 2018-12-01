@@ -95,7 +95,7 @@ pause;
 
 %% Use a threshold here to create a smaller set of 'good' records for
 % clustering
-threshold=1.5; %threshold for CV values of each record
+threshold = -1; %threshold for CV values of each record
 goodRecords = filterRecords(records, 'numeric threshold', threshold);
 %% Generate similarity matrix and preference values
 

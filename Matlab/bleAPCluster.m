@@ -1,7 +1,7 @@
 function [apOutput, thresholdClusters, originalClusters] = bleAPCluster(S, N, varargin)
 
 %setup parameters
-damp=0.9; minClusterSize=-1; scalingFactor=1; reformat = false; %some defaults
+damp=0.9; minClusterSize=-1; scalingFactor=1; reformat = false; useMedian = false;%some defaults
 i=1;
 while i<=length(varargin)
     if strcmp(varargin{i}, 'Threshold size')
@@ -16,6 +16,8 @@ while i<=length(varargin)
     elseif strcmp(varargin{i}, 'AP reformat')
         reformat = true;
         i=i+1;
+    elseif strcmp(varargin{i}, 'median pref')
+        useMedian = true;
     else
         i=i+1;
     end
@@ -62,8 +64,11 @@ size(SAP)
 % SAP(:,3)=nonzeros(SAP(:,3))
 % size(SAP)
 
-P = medianPref;%*ones(N,1)*scalingFactor; %Use scalar value if using median ONLY
-P = minimumPref;
+if useMedian
+    P = medianPref;%*ones(N,1)*scalingFactor; %Use scalar value if using median ONLY
+else
+    P = minimumPref;
+end
 %S = S*scalingFactor;
 
 [idx,netsim,dpsim,expref]=apcluster(SAP,P, 'maxits', 2000, 'dampfact', damp, 'nonoise');
