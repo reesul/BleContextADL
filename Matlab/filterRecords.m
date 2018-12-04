@@ -17,11 +17,13 @@ elseif strcmp(varargin{1}, 'numeric threshold')
     threshold = varargin{2};
 end
     
-% sort records based on CV value
-[~,sortInd] = sort([records{4,:}]);
-records = records(:,sortInd);
+
+
     
 if threshold ~= -1
+% sort records based on CV value
+    [~,sortInd] = sort([records{4,:}]);
+    records = records(:,sortInd);
     if usePercent
        records = records(:,1:uint32(length(records)*threshold));
     else    
@@ -38,6 +40,7 @@ recordMtx = reshape(recordMtx,[length(records{3,1}),length(records)]);
 recordMtx = recordMtx'; %transpose so a single record is a row; (index as i,:) for whole record i
 
 [~,goodIndexes,~] = unique(recordMtx,'rows');
+goodIndexes = sort(goodIndexes, 'ascend');
 
 goodRecords = records(:,goodIndexes);
 %uniqueRecords

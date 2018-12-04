@@ -18,6 +18,7 @@ while i<=length(varargin)
         i=i+1;
     elseif strcmp(varargin{i}, 'median pref')
         useMedian = true;
+        i=i+1
     else
         i=i+1;
     end
@@ -48,11 +49,11 @@ for i=1:N
 
     end
 end
-size(SAP)
+size(SAP);
 
 %resize based on j
 SAP = SAP(1:(j-1),:);
-medianPref=median(SAP(:,3))
+medianPref=median(SAP(:,3));
 
 minimumPref = min(SAP(:,3));
     
@@ -60,18 +61,20 @@ if ~reformat
     SAP = S;
 end
     
-size(SAP)
+size(SAP);
 % SAP(:,3)=nonzeros(SAP(:,3))
 % size(SAP)
 
 if useMedian
-    P = medianPref;%*ones(N,1)*scalingFactor; %Use scalar value if using median ONLY
+    P = medianPref%*ones(N,1)*scalingFactor; %Use scalar value if using median ONLY
 else
-    P = minimumPref;
+    P = minimumPref
 end
 %S = S*scalingFactor;
 
-[idx,netsim,dpsim,expref]=apcluster(SAP,P, 'maxits', 2000, 'dampfact', damp, 'nonoise');
+%use plot to show net similarities, details for some extra debugging, and
+%'nonoise' to make result entirely deterministic
+[idx,netsim,dpsim,expref]=apcluster(SAP,P, 'maxits', 2000, 'dampfact', damp, 'plot', 'nonoise');
 
 apOutput = {idx,netsim,dpsim,expref};
 

@@ -16,7 +16,7 @@
 %   S_AP is formatted specifically for the affinity propagaton algorithm.
 %   This format drastically reduces size
 
-function [S] = similarityRecords(records, alpha, beta)
+function [S] = similarityRecords(records, alpha, beta, weights)
 
 S = zeros(length(records));
 N = length(records);
@@ -47,7 +47,7 @@ for i=1:N
         r2 = recordMtx(j,:);
         
         %S(i,j) = calculateSim(r1, r2, alpha, beta);
-        s = calculateSim(r1, r2, alpha, beta);
+        s = calculateSim(r1, r2, alpha, beta, weights);
         if isnan(s)
             s=-inf;
         end
@@ -72,9 +72,9 @@ end
 
 
 %% utilitze a Tanimoto coefficient as the base of this similarity metric
-function [s] = calculateSim(r1,r2,a,b)
+function [s] = calculateSim(r1,r2,a,b, w)
 
-bitAnd = and(r1,r2);
+bitAnd = w.*and(r1,r2);
 tanimoto = sum(bitAnd)/(sum(r1)+sum(r2)-sum(bitAnd));
 
 

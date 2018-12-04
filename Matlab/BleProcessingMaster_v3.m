@@ -110,7 +110,7 @@ S_AP = similarityRecords(goodRecords, alpha, beta);
 
 %% Do clustering and evaluate vs. data 
 % see function details to provide additional arguments
-[apOutput,~,clusters] = bleAPCluster(S_AP, length(S_AP), 'damp', 0.9);
+[apOutput,~,clusters] = bleAPCluster(S_AP, length(S_AP), 'damp', 0.9, 'median pref');
 
 
 %% Combine records for clusters into a single "record" (bit-vector) describing the cluster
