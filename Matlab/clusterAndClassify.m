@@ -1,10 +1,11 @@
-function [fTree, fClusters] = clusterAndClassify(records, targetLabel, csvData)
+function [fTree, fClusters, clusterWeights] = clusterAndClassify(records, targetLabel, csvData)
 
 %init variables
 isRandomSplit = false;
 testTrainSplit = 0.75;
 binaryThresh = 0.1;
 negativeToPositiveRatio = 2;
+epsilon = 0.005; %bound for change in performance
 
 %used to retrieve activity labels
 %get the 'labels' variable by doing csvData = readActivityCsv(), labels =
@@ -30,6 +31,7 @@ fprintf('Begin clustering and classifying\n');
 confusionMtx = zeros(2);
 oldClusterRecords = {};
 stopCondition = false;
+oldF1 = 0;
 while ~stopCondition
     % itertively cluster and classify until stop condition is met
     S = similarityRecords(recordsToCluster, 1, 1, clusterWeights);
@@ -46,16 +48,23 @@ while ~stopCondition
     %do classification on trainingSet
     tree = fitctree(features, trainingLabels');
     testOutput = predict(tree, testFeatures);
-    confusionMtx = confusionMatrix(testOutput, testingLabels');
+    [confusionMtx,~,f1] = confusionMatrix(testOutput, testingLabels');
     %use predict(tree, testingSet(:,1:end-1) to get tree outputs
 
-    % goodClusters = MinkuTreeDecomposition();
+    % goodClusters = treeDecomposition();
     % convert goodClusters into a set of binary vectors; sum these into a
     % priorities vector, P
+    % P = sum(clusterReps(:,activityClusters);
     % clusterWeights = updateWeights(clusterWeights, P, 0.5)
 
+    %stop condition up for debate
+    %stopCondition = isequal(oldClusterRecords, clusterRecords);
+    changeInPerformance = f1-oldF1;
+    if abs(changeInPerformance) < epsilon %this may be flawed; there is no guaranteed minima to be reached, so it is possible that this will diverge
+        stopCondition = true;
+    end
+    oldF1 = f1
 
-    stopCondition = isequal(oldClusterRecords, clusterRecords);
     oldClusterRecords = clusterRecords;
 end
 
@@ -64,7 +73,7 @@ fClusters = clusterRecords;
 
 end
 
-function [confusionMtx, normCM] = confusionMatrix(testOutput, testLabels)
+function [confusionMtx, normCM, f1] = confusionMatrix(testOutput, testLabels)
 
 %predicted class along x axis, actual along y; second index is for positive
 %class
@@ -89,5 +98,8 @@ confusionMtx
 normCM
 
 accuracy = (confusionMtx(1,1)+confusionMtx(2,2)) / sum(confusionMtx(:))
+precision  = confusionMtx(2,2) / (confusionMtx (2,2) + confusionMtx(1,2));%true positive and false positive
+recall = confusionMtx(2,2) / (confusionMtx (2,2) + confusionMtx(2,1)) %true positive and false negative
+f1 = 2*precision*recall / (precision+recall);
 
 end
