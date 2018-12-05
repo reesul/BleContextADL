@@ -26,6 +26,7 @@ for idx = 1:len
             randIdx = randsample(65:74, 8);
             k = sprintf('%s%s', char(randIdx), kOriginal);
         end
+        keys{end + 1} = k;
         cut{idx} = k;
     end
 end
@@ -54,8 +55,6 @@ for idx = 1:len
 %         end
 
         cut{idx} = k;
-
-        keys{end + 1} = k;
         vals{end + 1} = s;
     end
 end
