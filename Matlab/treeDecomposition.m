@@ -15,23 +15,30 @@ vals = {};
 % create Map container - struct
 % struct: (parent node index, current column(cluster) name, left, right
 for idx = 1:len
+
     k = char(cut(idx));
     if ~isempty(k)
         
         cc = children(idx, :);
         s = struct;
         s.parentIdx = parent(idx);
-        s.current = k;
+        
         s.left = assignNext(cut, cc(1), classN); % x_N < 0.5 side
         s.right = assignNext(cut, cc(2), classN); % x_N >= 0.5 side
         
         kOriginal = k;
+        if strcmp(kOriginal, 'x251')
+            disp('k');
+        end
         while any(strcmp(k, keys))
             % if same cluster exists, add random char in front
             randIdx = randsample(65:74, 8);
             k = sprintf('%s%s', char(randIdx), kOriginal);
         end
-        
+
+        s.current = k;
+        cut{idx} = k;
+
         keys{end + 1} = k;
         vals{end + 1} = s;
     end
@@ -65,6 +72,10 @@ goodClusters = [];
 for k = keys
     kk = char(k);
     v = M(kk);
+    
+    if strcmp(kk, 'x306')
+        disp('k');
+    end
     
     [isLeftOne, isRightOne] = checkLeftRightIsOne(v);
     
