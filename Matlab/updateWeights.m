@@ -5,7 +5,7 @@ if (alpha > 1 || alpha < 0)
     return;
 end
 
-[sortedP, ind] = sort(P, 'descend')
+[sortedP, ind] = sort(P, 'descend');
 
 k = sum(~sortedP); %amount that can be redistributed to other elements
 n = length(P);
@@ -22,6 +22,6 @@ end
 
 %apply exponential weight moving average
 w = alpha*oldW + (1-alpha)*w;
-sum(w)
-sum(oldW)
+sum(w);
+sum(oldW);
 end

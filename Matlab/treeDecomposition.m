@@ -59,6 +59,10 @@ for idx = 1:len
     end
 end
 
+if isempty(keys)
+    goodClusters = [];
+    return;
+end
 M = containers.Map(keys, vals);
 
 goodClusters = getUniqueLeavesOfOnes(M, keys, cut);

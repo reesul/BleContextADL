@@ -1,4 +1,4 @@
-function [clusterRepresenter, clusterRecords] = organizeClusters(clusters, records)
+function [clusters, clusterRepresenter, clusterRecords] = organizeClusters(clusters, records)
 %remove empty clusters
 clusters = clusters(~cellfun(@isempty,clusters));
 %sort clusters based on size

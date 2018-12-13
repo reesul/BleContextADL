@@ -50,6 +50,8 @@ for i=1:N
         s = calculateSim(r1, r2, alpha, beta, weights);
         if isnan(s)
             s=-inf;
+        elseif ~isreal(s)
+            disp('why complex number?')
         end
         S(i,j) = s;
         
@@ -74,14 +76,16 @@ end
 %% utilitze a Tanimoto coefficient as the base of this similarity metric
 function [s] = calculateSim(r1,r2,a,b, w)
 
-bitAnd = w.*and(r1,r2);
-tanimoto = sum(bitAnd)/(sum(r1)+sum(r2)-sum(bitAnd));
+bitAnd = and(r1,r2);
+tanimoto = sum(w.*bitAnd)/(sum(r1)+sum(r2)-sum(bitAnd));
 
 
 s = a*log(tanimoto*b);
 
 if isnan(tanimoto) || isnan(s)
     fprintf('nan\n');
+elseif ~isreal(tanimoto) || ~isreal(s)
+    fprintf('complex\n')
 end
 
 end

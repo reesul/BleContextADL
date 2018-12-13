@@ -1,15 +1,28 @@
 %split is the percentage to build the training set from
-function [trainingSet, testingSet] = balanceClass(features, split, className, isRandomSplit, isRecords, negPosRatio)
+function [trainingSet, testingSet] = balanceClass(features, split, className, isRandomSplit, isRecords, negPosRatio, isDownSample)
 
 % do a random percentage split into test and training data
 if isRecords
     [test, train] = getTestTrainSetRecords(features, split, isRandomSplit);
-    trainingSet = downsampleRecords(train, className, negPosRatio);
-    testingSet = downsampleRecords(test, className, negPosRatio);
+
+    if isDownSample
+        trainingSet = downsampleRecords(train, className, negPosRatio);
+        testingSet = downsampleRecords(test, className, negPosRatio);
+    else
+        trainingSet = train;
+        testingSet = test;
+    end
+
 else
     [test, train] = getTestTrainSet(features, split, isRandomSplit);
-    trainingSet = downsample(train, negPosRatio);
-    testingSet = downsample(test, negPosRatio);
+
+     if isDownSample
+        trainingSet = downsample(train, negPosRatio);
+        testingSet = downsample(test, negPosRatio);
+    else
+        trainingSet = train;
+        testingSet = test;
+    end
 end
 
 % downsample both sets to max 1:2 ratio of positive:negative labels
@@ -144,9 +157,24 @@ if isempty(records)
     return;
 end
 
+labels = records(end-1:end, :);
+%check if we are looking at activities or locations
+for i=1:size(labels,2)
+    if strcmp(labels(1,i), className)
+        isActivities = true;
+        break;
+    elseif strcmp(labels(2,i), className)
+        isActivities = false;
+        break;
+    end
+end
 
+if isActivities
+    labels = labels(1,:);
+else
+    labels = labels(2,:);
+end
 
-labels = records(end-1,:);
 binLabels = logical(binaryLabels(className, labels));
 numPositive = sum(binLabels);
 
