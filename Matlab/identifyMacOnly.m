@@ -1,4 +1,4 @@
-function [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognizedDevices, numUniqueDev, similarityThreshold)
+function [recognizedDevices, numUniqueDev] = identifyMacOnly(bleData, recognizedDevices, numUniqueDev, similarityThreshold)
 
 for b=1:length(bleData)
    pInfo = extractFields(bleData{b});
@@ -11,7 +11,7 @@ for b=1:length(bleData)
    %if true, MAC has been seen before
    if recognizedDevices.isKey(MAC)
        recDev = recognizedDevices(MAC);
-       pInfo('value') = recDev('value');
+%        pInfo('value') = recDev('value');
        
        %modify device's dictionary/map
        recDev('scanNum') = recDev('scanNum') + 1;
@@ -31,7 +31,7 @@ for b=1:length(bleData)
        %    pInfo('value') = pastDevice('value'); %device will resolve to same value number (ID) as other MAC does
            
        %else %if no device is similar enough, append an entirely new one to the map
-       pInfo('value') = numUniqueDev; 
+       pInfo('value') = numUniqueDev+1 ; 
        numUniqueDev = numUniqueDev+1;
        %end
        
@@ -39,7 +39,8 @@ for b=1:length(bleData)
        recognizedDevices(MAC) = pInfo;
    end
            
-end  
+end
+
 
 end
 

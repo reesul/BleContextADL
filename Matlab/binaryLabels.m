@@ -8,4 +8,6 @@ for i=1:length(labelOriginal)
         labels(i) = 1;
     end
 
+labels=logical(labels);
+    
 end

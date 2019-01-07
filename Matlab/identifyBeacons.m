@@ -22,7 +22,7 @@ for b=1:length(bleData)
     %MAC has not been seen before; create new device entry, but it could be
     % an instance of a past device (i.e. MAC changes)
    elseif ignoreBeacon(pInfo)
-       pInfo('value') = numUniqueDev; 
+       pInfo('value') = numUniqueDev+1; 
        numUniqueDev = numUniqueDev+1;
        
        pInfo('scanNum') = 1;
@@ -37,7 +37,7 @@ for b=1:length(bleData)
            pInfo('value') = pastDevice('value'); %device will resolve to same value number (ID) as other MAC does
            
        else %if no device is similar enough, append an entirely new one to the map
-           pInfo('value') = numUniqueDev; 
+           pInfo('value') = numUniqueDev+1; 
            numUniqueDev = numUniqueDev+1;
        end
        

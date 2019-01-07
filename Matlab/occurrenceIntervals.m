@@ -8,12 +8,17 @@ queueLength = 4;
 queue = cell(1,queueLength); %give devices ~15 minutes grace period between occurrences
 currentDevices = {}; % set of device IDs seen w/i this window
 
-for b=1:length(bleData)
+b=0;
+while b< length(bleData) 
+    b=b+1;
+% for b=1:length(bleData)
     scan = bleData{b};
     time = bleTime(scan);
     
     %if this has already passed the window's end, move back, change window
     %bounds, and shift the queue back
+    % Also, current BLE scan is outside previous window; go back and
+    % consider it in new window
     if time > winStop
         b=b-1;
         winStart = time;
@@ -61,7 +66,8 @@ for b=1:length(bleData)
         
         occurrenceMap(value) = occurrenceArr;
     else
-        currentDevices{end+1} = value;%** change to one-hot encoding
+        %add a new device onto the occurrence
+        currentDevices{end+1} = value;
         occurrenceMap(value) = [d, time, time];
         %update end value of 
     end
@@ -87,7 +93,7 @@ function [isInQueue] = checkQueue(deviceValue, queue, currentDevices)
 isInQueue = false;
 
 if deviceValue==7
-    x=1;
+    x=1; %debug statement, remove later
 end
 
 for i=1:length(currentDevices)

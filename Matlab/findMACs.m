@@ -11,12 +11,11 @@ for v=1:length(deviceID)
 
         if v==dd
             MACs{end+1} = k{i};
-
         end
     end
 
 if isempty(MACs)
-    disp('no macs found for device IDs');
+    fprintf('no macs found for device ID %d', deviceID);
 end
     
 end

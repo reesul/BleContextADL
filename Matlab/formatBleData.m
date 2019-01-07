@@ -30,6 +30,9 @@ while ~feof(fid)
 end
 fclose(fid);
 
+timeInit = getBleTimes(res{1});
+
+
 %intialize some variables for the window's indices
 winEndTime = 0;
 winStartInd = 1;
@@ -63,7 +66,8 @@ for i=1:length(res)
 %        winEndTime = %is this needed?
        
        %SORT WINDOW HERE!!!
-       if(winEndInd~=1) %this ignores the first window, which is empty due to my methodology
+       if(winEndInd~=0) 
+            %this ignores the first window, which is empty due to my methodology
             %select the window to be the lines (i.e. device scans) between
             %the end of the previous window, and start of next one
            [sortedWindow, sortedTime] = sortBleWindow(res(winStartInd:winEndInd));

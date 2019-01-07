@@ -94,55 +94,60 @@ end
 %% helper functions
 function[records] = createDaysRecords(bleData, timestamps, windowSize, numDevices, devices)
 
-    records = cell(5,0);
-    blankRecord = false(1,numDevices);
-    winStart = 0;
-    winEnd = 0;
-    date = bleData{1}; %day this data was collected on
-    date = date(7:14);
+records = cell(5,0);
+blankRecord = false(1,numDevices);
+winStart = 0;
+winEnd = 0;
+date = bleData{1}; %day this data was collected on
+date = date(7:14);
 
-    for i=1:length(bleData) 
-        
-       t = timestamps(i);
-       
-       if t>winEnd   %start new window i.e. new record 
-           %save old record into 'records', begin a new one 
-           if i > 1
-               %todo add date
-               records{1,end+1} = date;
-               records{2,end} = winStart;
-               records{3,end} = br;
-               
-               %5th value is beacon turnover, which is 1 for the first
-               %record of the day (size==1), or if the time difference
-               %between window is larger than the window size (+10% due to
-               %BLE scanning characteristics
-               if (size(records,2)==1 || (winStart-records{2,end-1} > 1.1*windowSize))
-                   records{5,end} = 1;
-               else
-                   records{5,end} = beaconTurnover(records{3,end-1},br);
-               end
-               %fourth element of records cell must be computed after some
-               %additional processing
-               
+for i=1:length(bleData) 
+
+   t = timestamps(i);
+
+   if t>winEnd   %start new window i.e. new record 
+       %save old record into 'records', begin a new one 
+       if i > 1
+           records{1,end+1} = date;
+           records{2,end} = winStart;
+           records{3,end} = br;
+
+           %5th value is beacon turnover, which is 1 for the first
+           %record of the day (size==1), or if the time difference
+           %between window is larger than the window size (+10% due to
+           %BLE scanning characteristics
+           if (size(records,2)==1 || (winStart-records{2,end-1} > 1.1*windowSize)) 
+               records{5,end} = 1;
+           else
+               records{5,end} = beaconTurnover(records{3,end-1},br);
            end
-           
-           %update variables for new window
-           winStart = t;
-           winEnd = t + windowSize;
-           br = blankRecord;
-       end
-       
-       m = getMacAndTime(bleData{i}); %extract the MAC address
-       if devices.isKey(m)
-           dev = devices(m);
-           v = dev('value');
+           %fourth element of records cell must be computed after some
+           %additional processing
 
-           br(v+1) = true; %values start at 0, but indexing starts at 1 for arrays, hence +1; 
        end
-        
-        
-    end
+
+       %update variables for new window
+       winStart = t;
+       winEnd = t + windowSize;
+       br = blankRecord;
+   end
+
+   m = getMacAndTime(bleData{i}); %extract the MAC address
+   
+   %DEBUG
+   if strcmp(m, '26:D5:77:32:96:A9')
+       disp('found device with value 4');
+   end
+   
+   if devices.isKey(m)
+       dev = devices(m);
+       v = dev('value');
+
+       br(v) = true; 
+   end
+
+
+end
 
 end
 
