@@ -1,4 +1,4 @@
-function [records] = createRecords(datapath,recognizedDevices,windowSize, numDevices)
+function [records, allRecords] = createRecords(datapath,recognizedDevices,windowSize, numDevices)
 
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
@@ -85,6 +85,7 @@ for i=1:size(records,2)
 end
 
 %% Remove empty records from the data
+allRecords = records;
 records = records(:,nonNullSet);
 
 
@@ -133,12 +134,7 @@ for i=1:length(bleData)
    end
 
    m = getMacAndTime(bleData{i}); %extract the MAC address
-   
-   %DEBUG
-   if strcmp(m, '26:D5:77:32:96:A9')
-       disp('found device with value 4');
-   end
-   
+      
    if devices.isKey(m)
        dev = devices(m);
        v = dev('value');

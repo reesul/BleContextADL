@@ -17,7 +17,7 @@
 
 %% Options
 
-tryIdentification = false;
+tryIdentification = true;
 maxNumCompThreads(1); %More than one thread has been found to cause issues during identification
 
 %% Initial variable setup
@@ -26,6 +26,7 @@ recognizedDevices = containers.Map;
 occurrenceMap = containers.Map('KeyType', 'double', 'ValueType', 'any');
 similarityThreshold = 0.9;
 numUniqueDev = 0;
+windowSize = 60*1000; % in ms
 
 %% extract data from file and perform identfication to resolve random MACs
 
@@ -75,7 +76,7 @@ save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap')
 
 delete identificationProgress.mat
 %% Clean data
-[cleanOMap, cleanDevices, cleanNumDev] = cleanBLE(occurrenceMap, recognizedDevices, numUniqueDev);
+[cleanOMap, cleanDevices, cleanNumDev] = cleanBLE(occurrenceMap, recognizedDevices, numUniqueDev, true);
 
 % log data for viewing
 if isfile('occurrences.log')
@@ -92,11 +93,11 @@ end
 diary off
 
 %% Generate records based on set of good beacons
-records = createRecords(datapath, cleanDevices, 60*1000, cleanNumDev); % use 60 second interval for creating records
+originalRecords = createRecords(datapath, cleanDevices, windowSize, cleanNumDev); % use 60 second interval for creating records
 
 %% Parse CSV file containing all labels and their start/end times
 csvData = readActivityCsv();
-originalRecords = records;
+records = originalRecords;
 labels = getLabelVec(csvData, records);
 records = [records; labels];
 
@@ -108,29 +109,34 @@ locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'clas
 
 %% Build classification rules to represent context for each class
 ruleSets = cell(length(activityLabelNames),1);
+minSupport = 1; %need at least 3 records to support using a 
+iouThreshold = 0.7;
 
-nonnullLabelIndex = ~strcmp('null', records(end-1,:));
-labeledActivityRecords = records(:, nonnullLabelIndex);
+% nonnullLabelIndex = ~strcmp('null', records(end-1,:));
+% labeledActivityRecords = records(:, nonnullLabelIndex);
 
 for l=1:length(activityLabelNames)
    
-    ruleSets(l,:) = {createRules_v2(labeledActivityRecords, activityLabelNames(l))};
+    ruleSets(l,:) = {createRules_v3(records, activityLabelNames(l), minSupport, iouThreshold)};
+%     ruleSets(l,:) = {createRules_v2(records, activityLabelNames(l))};
     
 end
 
-%% test the records agiana
+%% test the records
 recordMtx = recordMatrix(records);
+contextFeatures = zeros(size(records,2), length(activityLabelNames));
 
 for r=1:size(recordMtx, 1)
     detectedContext = zeros(1, length(activityLabelNames));
     for l=1:length(activityLabelNames)
-        detectedContext(l) = testRuleSet(ruleSets{l,:}, recordMtx(r,:));
+        detectedContext(l) = testRuleSet(ruleSets{l,:}, recordMtx(r,:),l);
         
     end
-    detectedContext
-    fprintf('%s\t%s\n', records{end-1:end, r});  
-    if mod(r, 20) == 0
-        x=1;
+    contextFeatures(r,:) = detectedContext;
+%     fprintf('%s\t%s\n', records{end-1:end, r});  
+
+    if ~any(detectedContext) %debugging check
+        records(:,r); 
     end
     
 end

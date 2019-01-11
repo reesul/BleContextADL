@@ -78,7 +78,7 @@ MACs = findMACs(values, recognizedDevices);
 [~,values,~] = searchDeviceMap(recognizedDevices, '09', 'Tile');
 MACs = [MACs, findMACs(values, recognizedDevices)];
 
-
+MACs = [MACs, {'00:00:00:00:00:00'}]; %because some devs are idiots and didn't assign real MAC addrress
 end
 
 function [b] = checkForBadMAC(badMACs, value, recognizedDevices)

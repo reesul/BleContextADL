@@ -44,8 +44,7 @@ date,start_time,end_time,activity,location
 8/30/2018,14:15,15:40,class,classroom_etb
 8/30/2018,15:40,16:05,eating,lab
 8/30/2018,16:05,17:00,research,lab
-8/30/2018,17:00,17:15,driving,null
-8/30/2018,17:15,19:25,schoolwork,home
+8/30/2018,17:30,19:25,schoolwork,home
 8/31/2018,8:35,8:50,driving,null
 8/31/2018,8:50,10:20,exercising,gym
 8/31/2018,11:15,14:35,research,lab
@@ -69,7 +68,7 @@ date,start_time,end_time,activity,location
 9/3/2018,19:55,20:10,driving,null
 9/3/2018,20:10,23:25,social_event,social
 9/3/2018,23:25,23:35,driving,null
-9/4/2018,0:00,14:00,class,classroom_wc
+9/4/2018,12:45,14:00,class,classroom_wc
 9/4/2018,14:00,14:10,biking,null
 9/4/2018,14:10,14:15,walking,null
 9/4/2018,14:15,15:35,class,classroom_etb
@@ -112,11 +111,11 @@ date,start_time,end_time,activity,location
 9/10/2018,9:00,10:30,exercising,gym
 9/10/2018,11:10,11:20,driving,null
 9/10/2018,11:20,11:25,walking,null
-9/10/2018,11:25,12:40,research,lab
-9/10/2018,12:40,13:20,class,classroom_etb
+9/10/2018,11:25,12:45,research,lab
+9/10/2018,12:51,13:10,class,classroom_etb
 9/10/2018,13:45,14:15,eating,lab
-9/10/2018,14:15,18:45,research,lab
-9/10/2018,18:45,19:00,driving,null
+9/10/2018,14:15,18:47,research,lab
+9/10/2018,18:47,19:00,driving,null
 9/10/2018,19:00,19:10,eating,home
 9/10/2018,19:10,19:25,cooking,home
 9/10/2018,19:25,20:35,schoolwork,home
@@ -158,9 +157,9 @@ date,start_time,end_time,activity,location
 9/13/2018,12:25,12:35,biking,null
 9/13/2018,12:35,14:00,class,classroom_wc
 9/13/2018,14:00,14:10,biking,null
-9/13/2018,14:10,15:35,class,classroom_etb
+9/13/2018,14:15,15:35,class,classroom_etb
 9/13/2018,15:35,15:40,walking,null
-9/13/2018,15:40,17:00,class,classroom_zach-1
+9/13/2018,15:45,16:50,class,classroom_zach-1
 9/13/2018,18:15,20:30,schoolwork,home
 9/13/2018,20:30,23:59,relaxing,home
 9/14/2018,8:15,8:30,driving,null
@@ -197,7 +196,7 @@ date,start_time,end_time,activity,location
 9/18/2018,12:30,12:35,biking,null
 9/18/2018,12:35,13:55,class,classroom_wc
 9/18/2018,13:55,14:10,biking,null
-9/18/2018,14:10,15:35,class,classroom_etb
+9/18/2018,14:15,15:35,class,classroom_etb
 9/18/2018,16:30,18:45,research,lab
 9/18/2018,18:45,19:00,driving,null
 9/18/2018,19:30,21:45,schoolwork,home
@@ -207,7 +206,7 @@ date,start_time,end_time,activity,location
 9/26/2018,9:00,10:40,exercising,gym
 9/26/2018,11:15,11:25,driving,null
 9/26/2018,11:25,11:30,walking,null
-9/26/2018,11:40,12:00,research,lab
+9/26/2018,11:40,11:55,research,lab
 9/26/2018,12:00,12:50,meeting,seminar_room
 9/26/2018,12:50,15:00,research,lab
 9/26/2018,15:30,17:15,research,lab
@@ -227,8 +226,8 @@ date,start_time,end_time,activity,location
 10/4/2018,12:10,12:25,eating,null
 10/4/2018,12:25,12:35,biking,null
 10/4/2018,12:35,14:00,class,classroom_wc
-10/4/2018,14:00,14:15,biking,null
-10/4/2018,14:15,15:35,class,classroom_etb
+10/4/2018,14:00,14:10,biking,null
+10/4/2018,14:20,15:35,class,classroom_etb
 10/4/2018,16:00,17:00,class,classroom_zach-2
 10/4/2018,17:00,17:05,walking,null
 10/4/2018,17:05,17:20,driving,null
@@ -237,7 +236,7 @@ date,start_time,end_time,activity,location
 10/8/2018,10:45,11:00,driving,null
 10/8/2018,11:00,11:30,research,lab
 10/8/2018,12:30,12:50,research,lab
-10/8/2018,12:50,12:30,class,classroom_etb
+10/8/2018,12:50,13:20,class,classroom_etb
 10/8/2018,15:00,18:00,schoolwork,home
 10/8/2018,19:00,21:30,relaxing,home
 10/9/2018,8:15,8:45,schoolwork,home
@@ -276,7 +275,7 @@ date,start_time,end_time,activity,location
 10/22/2018,9:45,12:00,research,lab
 10/22/2018,12:00,12:30,eating,lab
 10/22/2018,12:30,12:50,research,lab
-10/22/2018,12:50,13:10,class,classroom_etb
+10/22/2018,12:55,13:10,class,classroom_etb
 10/22/2018,13:30,13:40,driving,null
 10/22/2018,15:00,19:20,schoolwork,home
 10/22/2018,19:20,19:40,eating,home
@@ -289,7 +288,7 @@ date,start_time,end_time,activity,location
 10/23/2018,12:00,12:05,biking,null
 10/23/2018,12:05,12:25,eating,null
 10/23/2018,12:25,12:30,biking,null
-10/23/2018,12:30,13:55,class,classroom_wc
+10/23/2018,12:35,13:55,class,classroom_wc
 10/23/2018,13:55,14:10,biking,null
 10/23/2018,17:25,19:20,research,lab
 10/23/2018,19:20,19:25,walking,null
@@ -312,11 +311,11 @@ date,start_time,end_time,activity,location
 10/25/2018,12:00,12:10,biking,null
 10/25/2018,12:10,12:25,eating,null
 10/25/2018,12:25,12:30,biking,null
-10/25/2018,12:30,13:45,class,classroom_wc
+10/25/2018,12:35,13:45,class,classroom_wc
 10/25/2018,13:45,13:55,biking,null
 10/25/2018,14:20,15:35,class,classroom_etb
 10/25/2018,15:35,15:45,walking,null
-10/25/2018,15:45,17:15,class,classroom_zach-2
+10/25/2018,15:55,17:15,class,classroom_zach-2
 10/25/2018,17:15,17:20,walking,null
 10/25/2018,17:20,17:40,driving,null
 10/25/2018,18:15,23:59,schoolwork,home

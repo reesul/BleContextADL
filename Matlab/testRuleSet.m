@@ -1,4 +1,4 @@
-function bool = testRuleSet(ruleset, record)
+function bool = testRuleSet(ruleset, record, activityNum)
 bool=false;
 
 
@@ -12,6 +12,8 @@ for r=1:size(ruleset,1)
    %rule
    if all(record(rule))
        bool = true;
+       if (length(rule)>1)
+           x=1;
        return;
    end
     
