@@ -36,7 +36,8 @@ index = 1;
 %continue creating rules until they exist such that all examples are
 %covered by some rule
 while ~all(coveredRecords) && summedSortedSupport(index)>=minSupport
-
+% while ~all(coveredRecords) && summedSortedSupport(index)/size(supportMtx,1)>=minSupport %minSupport is percentage
+    
     examples = find(sortedSupport(:,index));
     absExamples = binLabelsInd(examples);
     IOU = zeros(size(ruleSet,1),1); %size of intersect over size of union
@@ -46,7 +47,8 @@ while ~all(coveredRecords) && summedSortedSupport(index)>=minSupport
     for j=1:size(ruleSet,1)
        compareExamples = ruleSet{j,4};
        common = intersect(examples, compareExamples); 
-       if numel(common) >= minSupport
+%        if numel(common)/size(supportMtx,1) >= minSupport %here, minSupport is percentage
+       if numel(common) >= minSupport 
            IOU(j) = numel(common) / (numel(examples) + numel(compareExamples) - numel(common));
        else
            IOU(j) = 0;

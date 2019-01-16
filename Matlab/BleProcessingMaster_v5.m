@@ -107,38 +107,65 @@ records = records(:, nonnullLabelIndex);
 activityLabelNames = {'biking', 'class', 'cooking', 'driving', 'eating', 'exercising', 'meeting', 'relaxing', 'research', 'schoolwork', 'walking'};
 locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'classroom_zach-2', 'gym', 'home', 'lab', 'seminar_room'};
 
+%% Extract features for IMU and heartrate
+
+[accFeatures, gyroFeatures, heartrateFeatures] = foregroundFeatures(records, datapath, windowSize);
+imuFeatures = [accFeatures; gyroFeatures];
+
+
+%% Separate into training and testing datasets
+split = 0.75;
+
+%separate based on the number of days in the data
+days = unique(records(1,:));
+numTrainingDays = round(length(days)*split);
+trainingDays = days(1:numTrainingDays);
+
+i=1;
+while ismember(records(1,i), testingDays)
+    i=i+1;   
+end
+i=i-1; %correct for additional iteration
+
+trainingRecords = records(:,1:i);
+testingRecords = records(:,i+1:end);
+
+%apply the same split to the other features
+imuFeaturesTrain = imuFeatures(1:i,:);
+imuFeaturesTest = imuFeatures(i+1:end,:);
+hrFeaturesTrain = heartrateFeatures(1:i,:);
+hrFeaturesTest = heartrateFeatures(i+1:end,:);
+
 %% Build classification rules to represent context for each class
 ruleSets = cell(length(activityLabelNames),1);
-minSupport = 1; %need at least 3 records to support using a 
-iouThreshold = 0.7;
+minSupport = 5; %lower limit to number of examples needed for pattern to be valid
+iouThreshold = 0.75;
+numBags = 20;
+randFeatSplit = 0.6; %percentage of valid features/beacons to consider
 
 % nonnullLabelIndex = ~strcmp('null', records(end-1,:));
 % labeledActivityRecords = records(:, nonnullLabelIndex);
 
 for l=1:length(activityLabelNames)
-   
-    ruleSets(l,:) = {createRules_v3(records, activityLabelNames(l), minSupport, iouThreshold)};
+
+    ruleSets{l,:} = createRules_v4(trainingRecords, activityLabelNames(l), minSupport, iouThreshold, numBags, randFeatSplit);
+%     ruleSets(l,:) = {createRules_v3(trainingRecords, activityLabelNames(l), minSupport, iouThreshold)};
 %     ruleSets(l,:) = {createRules_v2(records, activityLabelNames(l))};
     
 end
 
-%% test the records
-recordMtx = recordMatrix(records);
-contextFeatures = zeros(size(records,2), length(activityLabelNames));
+%% assign features for context
 
-for r=1:size(recordMtx, 1)
-    detectedContext = zeros(1, length(activityLabelNames));
-    for l=1:length(activityLabelNames)
-        detectedContext(l) = testRuleSet(ruleSets{l,:}, recordMtx(r,:),l);
-        
-    end
-    contextFeatures(r,:) = detectedContext;
-%     fprintf('%s\t%s\n', records{end-1:end, r});  
+contextFeaturesTrain = assignContextFeatures(trainingRecords, activityLabelNames, ruleSets);
+contextFeaturesTest = assignContextFeatures(testingRecords, activityLabelNames, ruleSets);
 
-    if ~any(detectedContext) %debugging check
-        records(:,r); 
-    end
-    
-end
-    
+%% Prepare for generating and Generate files for Weka
 
+featTrain = removeEmptyInstances([imuFeaturesTrain, contextFeaturesTrain]);
+featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);
+
+normFeatTrain = normalize(featTrain, 'range');
+normFeatTest = normalize(featTest, 'range');
+
+wekaDataBle(normFeatTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
+wekaDataBle(normFeatTest, testingRecords(end-1,:), activityLabelNames, false);

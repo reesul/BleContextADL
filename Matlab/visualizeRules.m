@@ -11,7 +11,7 @@ rules = ruleSet(:,1);
 examples = ruleSet(:,2);
 realExamples = [];
 for e=1:length(examples)
-    realExamples = [realExamples, examples{e}];
+    realExamples = [realExamples, examples{e}'];
 end
 
 % number of examples for A and not-A activities (labelName==A)
@@ -25,12 +25,12 @@ notA = cell(length(rules),1);
 for r=1:length(rules)
     %calculate coverage rates
     ruleCoverage(r) = length(examples{r})/numExamples;
-    fpCoverage(r) = sum(recordMtx(:, rules{r})) - length(examples{r});
+    fpCoverage(r) = sum(all(recordMtx(:, rules{r}),2)) - length(examples{r});
     fpCoverage(r) = fpCoverage(r)/numNotExamples;
     
     %get the set of activities this rules applies to besides A
 %     coveredExamples = find(recordMtx(:,rules{r}))
-    otherLabels = unique(records(end-1,  logical(recordMtx(:,rules{r}))));
+    otherLabels = unique(records(end-1,  logical(all(recordMtx(:,rules{r}),2))));
     otherLabels = otherLabels(~strcmp(otherLabels, {labelName}));
     otherLabels = join(otherLabels,', ');
     if isempty(otherLabels)
