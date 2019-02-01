@@ -101,6 +101,8 @@ winStart = 0;
 winEnd = 0;
 date = bleData{1}; %day this data was collected on
 date = date(7:14);
+windowMACs = {};
+pastWindowMACs = {};
 
 for i=1:length(bleData) 
 
@@ -113,15 +115,19 @@ for i=1:length(bleData)
            records{2,end} = winStart;
            records{3,end} = br;
 
-           %5th value is beacon turnover, which is 1 for the first
+           %5th value is beacon turnover, which is 0 for the first
            %record of the day (size==1), or if the time difference
            %between window is larger than the window size (+10% due to
            %BLE scanning characteristics
-           if (size(records,2)==1 || (winStart-records{2,end-1} > 1.1*windowSize)) 
-               records{5,end} = 1;
+           if ( size(records,2)==1 || (winStart-records{2,end-1} > 2*windowSize) ) 
+               records{5,end} = 0;
            else
-               records{5,end} = beaconTurnover(records{3,end-1},br);
+%                records{5,end} = beaconTurnover(records{3,end-1},br);
+                records{5,end} = beaconTurnover(windowMACs, pastWindowMACs);
            end
+           pastWindowMACs = windowMACs;
+           windowMACs = {};
+           
            %fourth element of records cell must be computed after some
            %additional processing
 
@@ -134,6 +140,10 @@ for i=1:length(bleData)
    end
 
    m = getMacAndTime(bleData{i}); %extract the MAC address
+   
+   if ~any(ismember(m, windowMACs))
+       windowMACs = [windowMACs, m];
+   end
       
    if devices.isKey(m)
        dev = devices(m);

@@ -2,7 +2,7 @@
 function [csvData] = readActivityCsv() 
 
 
-csvF = fopen('activityLabels.csv','r');
+csvF = fopen('activityLabels_tuned.csv','r');
 
 csvData = cell(0,5);
 
@@ -24,6 +24,8 @@ while (ischar(line))
     line = fgetl(csvF);
 
 end
+
+fclose(csvF);
 
 end
 

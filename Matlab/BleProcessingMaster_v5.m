@@ -17,14 +17,14 @@
 
 %% Options
 
-tryIdentification = true;
+tryIdentification = false;
 maxNumCompThreads(1); %More than one thread has been found to cause issues during identification
 
 %% Initial variable setup
 
 recognizedDevices = containers.Map;
 occurrenceMap = containers.Map('KeyType', 'double', 'ValueType', 'any');
-similarityThreshold = 0.9;
+similarityThreshold = 0.95;
 numUniqueDev = 0;
 windowSize = 60*1000; % in ms
 
@@ -72,7 +72,7 @@ end
 % clear I
 
 %% save state - this section takes a very long time to process
-save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap');
+save('identification.mat', 'recognizedDevices', 'numUniqueDev', 'occurrenceMap', 'windowSize');
 
 delete identificationProgress.mat
 %% Clean data
@@ -92,8 +92,11 @@ for i=1:cleanNumDev
 end
 diary off
 
+
 %% Generate records based on set of good beacons
 originalRecords = createRecords(datapath, cleanDevices, windowSize, cleanNumDev); % use 60 second interval for creating records
+
+save('records.mat',  'recognizedDevices', 'numUniqueDev', 'occurrenceMap', 'cleanOMap', 'cleanDevices', 'cleanNumDev', 'originalRecords', 'windowSize');
 
 %% Parse CSV file containing all labels and their start/end times
 csvData = readActivityCsv();
@@ -104,37 +107,59 @@ records = [records; labels];
 nonnullLabelIndex = ~strcmp('null', records(end-1,:));
 records = records(:, nonnullLabelIndex);
 
-activityLabelNames = {'biking', 'class', 'cooking', 'driving', 'eating', 'exercising', 'meeting', 'relaxing', 'research', 'schoolwork', 'walking'};
+% activityLabelNames = {'biking', 'class', 'cooking', 'driving', 'eating', 'exercising', 'meeting', 'relaxing', 'research', 'schoolwork', 'walking'};
+activityLabelNames = {'biking', 'class', 'cooking', 'driving', 'exercising', 'meeting', 'research', 'schoolwork', 'walking'};
+
 locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'classroom_zach-2', 'gym', 'home', 'lab', 'seminar_room'};
 
-%% Extract features for IMU and heartrate
+%% Extract data and then features for IMU
 
-[accFeatures, gyroFeatures, heartrateFeatures] = foregroundFeatures(records, datapath, windowSize);
-imuFeatures = [accFeatures; gyroFeatures];
+rawSensorData = foregroundFeatures(records, datapath, windowSize); %only want the raw data from this, calculate features separately on next line
 
+[imuFeatures, imuTimes] = processIMU(records, rawSensorData, windowSize, {});
+
+%% Extract statistical features for BLE
+bleFeatures = statisticalBleFeat(records);
+
+%% get rid of instances with missing data; normalize features
+% [~, nonEmptyRecordInd] = removeEmptyInstances([imuFeatures, heartrateFeatures]);
+[~, nonEmptyRecordInd] = removeEmptyInstances(imuFeatures);
+
+imuFeatures = imuFeatures(nonEmptyRecordInd, :);
+imuTimes = imuTimes(nonEmptyRecordInd, :);
+finalRecords = records(:, nonEmptyRecordInd);
+bleFeatures = bleFeatures(nonEmptyRecordInd, :);
+
+
+%normalize the imu features
+imuFeatures = normalize(imuFeatures, 'range');
+bleFeatures = normalize(bleFeatures, 'range');
 
 %% Separate into training and testing datasets
 split = 0.75;
 
 %separate based on the number of days in the data
-days = unique(records(1,:));
+days = unique(finalRecords(1,:));
 numTrainingDays = round(length(days)*split);
+numTrainingDays = numTrainingDays - 1; %correct for the extra data I added
 trainingDays = days(1:numTrainingDays);
 
-i=1;
-while ismember(records(1,i), testingDays)
-    i=i+1;   
+endTrainIndex=1;
+while ismember(finalRecords(1,endTrainIndex), trainingDays)
+    endTrainIndex=endTrainIndex+1;   
 end
-i=i-1; %correct for additional iteration
+endTrainIndex=endTrainIndex-1; %correct for additional iteration
 
-trainingRecords = records(:,1:i);
-testingRecords = records(:,i+1:end);
+trainingRecords = finalRecords(:,1:endTrainIndex);
+testingRecords = finalRecords(:,endTrainIndex+1:end);
 
 %apply the same split to the other features
-imuFeaturesTrain = imuFeatures(1:i,:);
-imuFeaturesTest = imuFeatures(i+1:end,:);
-hrFeaturesTrain = heartrateFeatures(1:i,:);
-hrFeaturesTest = heartrateFeatures(i+1:end,:);
+imuFeaturesTrain = imuFeatures(1:endTrainIndex,:);
+imuFeaturesTest = imuFeatures(endTrainIndex+1:end,:);
+% hrFeaturesTrain = heartrateFeatures(1:endTrainIndex,:);
+% hrFeaturesTest = heartrateFeatures(i+endTrainIndex:end,:);
+bleFeaturesTrain = bleFeatures(1:endTrainIndex,:);
+bleFeaturesTest = bleFeatures(endTrainIndex+1:end,:);
 
 %% Build classification rules to represent context for each class
 ruleSets = cell(length(activityLabelNames),1);
@@ -154,18 +179,46 @@ for l=1:length(activityLabelNames)
     
 end
 
-%% assign features for context
+%% Calculate Bayesian probabilities and resulting 3-d matrix to represent (for each record) the probability of P(activity | pattern)
+[patternPr, allPatterns] = patternBayes(ruleSets, trainingRecords, activityLabelNames);
+cTrainingRaw = cell(size(trainingRecords,2),4);
+trainingRecordMtx = recordMatrix(trainingRecords);
 
-contextFeaturesTrain = assignContextFeatures(trainingRecords, activityLabelNames, ruleSets);
-contextFeaturesTest = assignContextFeatures(testingRecords, activityLabelNames, ruleSets);
+for i=1:size(trainingRecordMtx,1)
+    
+%     [cTrainingRaw{i,1}, cTrainingRaw{i,2}] = testRecord(recordMtx(i,:), allPatterns, patternPr);
+    [cTrainingRaw{i,1}, cTrainingRaw{i,3}] = testRecord(trainingRecordMtx(i,:), allPatterns, patternPr);
 
-%% Prepare for generating and Generate files for Weka
+    cTrainingRaw(i,2) = trainingRecords(end-1,i);
+    cTrainingRaw{i,4} = [trainingRecords{1,i}, '  ', num2date(trainingRecords{2,i})];
+    
+end
 
-featTrain = removeEmptyInstances([imuFeaturesTrain, contextFeaturesTrain]);
-featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);
+appliedPatterns = cTrainingRaw(:,3);
 
-normFeatTrain = normalize(featTrain, 'range');
-normFeatTest = normalize(featTest, 'range');
 
-wekaDataBle(normFeatTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
-wekaDataBle(normFeatTest, testingRecords(end-1,:), activityLabelNames, false);
+%% assign features for context using the patterns/rules found in the set of training records
+
+% contextFeaturesTrain = assignContextFeatures(trainingRecords, activityLabelNames, ruleSets);
+% contextFeaturesTest = assignContextFeatures(testingRecords, activityLabelNames, ruleSets);
+
+contextFeaturesTrain = assignContextFeatures_v2(trainingRecords, activityLabelNames, allPatterns, patternPr, appliedPatterns);
+contextFeaturesTest = assignContextFeatures_v2(testingRecords, activityLabelNames, allPatterns, patternPr, appliedPatterns);
+
+%normalize the context features, then seaprate again
+contextFeatures = normalize([contextFeaturesTrain; contextFeaturesTest], 'range');
+contextFeaturesTrain = contextFeatures(1:size(contextFeaturesTrain,1),:);
+contextFeaturesTest = contextFeatures(size(contextFeaturesTrain,1)+1:end,:);
+
+
+%% combine and normalize features, and then Generate files for Weka
+
+% featTrain = removeEmptyInstances([imuFeaturesTrain, contextFeaturesTrain]);
+% featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);
+featTrain = [imuFeaturesTrain, contextFeaturesTrain, bleFeaturesTrain];
+featTest = [imuFeaturesTest, contextFeaturesTest, bleFeaturesTest];
+
+filename = 'twoMinWindows_1-31';
+
+wekaDataBle(filename, featTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
+wekaDataBle(filename, featTest, testingRecords(end-1,:), activityLabelNames, false);

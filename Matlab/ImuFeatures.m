@@ -13,7 +13,7 @@ endTimes = recordTimes + windowSize;
 
 % intialize output matrices
 % feat is features
-feat = zeros(numWindows, 4*5); %num axes * num features
+feat = zeros(numWindows, 4*9); %num axes * num features + misc
 
 %% Get indices for windows of data to extract features from
 [windowStartInd, windowEndInd] = windowIndices(recordTimes, time, windowSize);
@@ -26,9 +26,9 @@ for w=1:numWindows
         continue;
     end
 
-    window_time = time(windowStartInd(w):windowEndInd(w));
+%     window_time = time(windowStartInd(w):windowEndInd(w));
     window = data(windowStartInd(w):windowEndInd(w),:);
-    
+    feat(w,:) = imuFeatureWindow(window)
     
 %     get features, listed:
 %     mean, std, rms, zero cross, variance, integration, skewness, 
@@ -39,6 +39,21 @@ for w=1:numWindows
     root_mean = rms(window,1);
     mean_cross_rate = MCR(window);
     variance = var(window);
+    
+    Fs = 20; %sampled at about 20 hz
+    N=2000; %
+    ft = fft(window, N); %take fft along the magnitude
+    
+    psd = (ft.*conj(ft))./(N*Fs);
+    psd = psd(2:N/2+1,:); %input is real valued, so fft is symmetric and only the first half (minus DC) needs to be considered
+    pLen = length(psd); %this will be N/2
+    
+    %Take bins for 0-1 Hz (ignoring DC component, so 0+), 1-2, 2-5, and 5-10 
+    bin_0_1 = mean(psd(1:round(pLen/10),:),1);
+    bin_1_2 = mean(psd(round(pLen/10)+1:round(pLen/5),:),1);
+    bin_2_5 = mean(psd(round(pLen/5)+1:round(pLen/2),:),1);
+    bin_5_10 = mean(psd(round(pLen/2)+1:end,:),1);
+    
 %     integral = trapz(window_time, window,1);
 %     skew = skewness(window);
 %     ff = fft(window);
@@ -49,7 +64,7 @@ for w=1:numWindows
 %     put into the feature vector
 %     feat(w,:) = [avg, st_dev, root_mean, mean_cross_rate, variance, ...
 %         integral, skew, ff];
-     feat(w,:) = [avg, st_dev, root_mean, mean_cross_rate, variance];
+     feat(w,:) = [avg, st_dev, root_mean, mean_cross_rate, variance, bin_0_1, bin_1_2, bin_2_5, bin_5_10];
     
 end
 

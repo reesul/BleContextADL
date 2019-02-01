@@ -7,14 +7,14 @@ endInd = zeros(1,numWindows);
 timeInd = 1; %index counting where we are within the times-series data from the sensor
 w=1; %window counter
 endTimes = recordTimes + windowSize;
-emptyWindows = []
+emptyWindows = [];
 
 %% get the first window separately
 % dataStartWindowDone = true;
 while true
     %
     if (times(timeInd) < recordTimes(w))
-        disp('data starts before first record; move on');
+%         disp('data starts before first record; move on');
         break;
         
     elseif (times(1) > recordTimes(w) && times(1) < endTimes(w))
@@ -25,11 +25,11 @@ while true
         endInd(w) = timeInd;
         timeInd = timeInd+1;
         w = w+1;
-        disp('data starts in middle of the window');
+%         disp('data starts in middle of the window');
         break;
         
     else
-        disp('record has no data to associate with it!');
+%         disp('record has no data to associate with it!');
         startInd(w) = -1; endInd(w) = -1; %may need to fix this!
         emptyWindows = [emptyWindows, w];
         w=w+1;
@@ -42,11 +42,11 @@ end
 
 for w=w:numWindows
     % get the start index for this window first
-   disp(w);
+%    disp(w);
    while ~( (times(timeInd) < recordTimes(w)) && times(timeInd+1) >= recordTimes(w) )
             timeInd = timeInd+1;
             if (times(timeInd) > endTimes(w))
-               disp('overshot; no acc data in this window')
+%                disp('overshot; no acc data in this window')
                startInd(w) = -1; endInd(w) = -1; emptyWindows = [emptyWindows, w];
                break;
             end
@@ -64,7 +64,7 @@ for w=w:numWindows
    startInd(w) = timeInd;
    
    if (times(timeInd) > endTimes(w))
-       disp('overshot; no acc data in this window')
+%        disp('overshot; no acc data in this window')
        startInd(w) = -1; endInd(w) = -1; emptyWindows = [emptyWindows, w];
        continue;
    end
@@ -82,7 +82,7 @@ for w=w:numWindows
     timeInd = timeInd+1;
     
     if (times(startInd(w)) < recordTimes(w) || times(endInd(w)) > endTimes(w))
-       disp('samples exist outside of window!')
+%        disp('samples exist outside of window!')
        disp(w);
     end
        

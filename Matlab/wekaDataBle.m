@@ -1,4 +1,4 @@
-function [] = wekaData(features, labels, labelNames, isTrain)
+function [] = wekaDataBle(filename, features, labels, labelNames, isTrain)
 
 %remove the records that have null activity labels
 % nonNullRecordsInd = ~strcmp(rawLabels(1,:), 'null');
@@ -15,12 +15,12 @@ numFeatures = size(features,2);
 wekaDataOut = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\Processing\Classification\';
 
 if isTrain
-    s = 'training';
+    s = [filename, '_training'];
 else
-    s = 'testing';
+    s = [filename, '_testing'];
 end
 
-arffFileName = [wekaDataOut,'feat_', s, '.arff'];
+arffFileName = [wekaDataOut, s, '.arff'];
 %if .arff file is already there, just delete it so it doesn't show in files
 if (fopen(arffFileName, 'r') ~= -1)
     fclose('all');
