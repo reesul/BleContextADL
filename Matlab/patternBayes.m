@@ -1,6 +1,6 @@
 function [P, mergedPatterns, rawPatterns] = patternBayes(ruleSets, records, classLabels)
 
-numActivities = size(ruleSets,1);
+numActivities = length(ruleSets);
 
 %% First mege all of the rule sets into a single set
 mergedPatterns = cell(0,4);

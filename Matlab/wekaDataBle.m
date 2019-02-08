@@ -72,7 +72,11 @@ fprintf(fArff, '@data\n');
 for i=1:numRecords
     for j=1:numFeatures
 %         s = sprintf('%f',featureSet(i,j));
-        fprintf(fArff, '%f,', features(i,j));
+        if isnan(features(i,j))
+            fprintf(fArff, '?,');
+        else
+            fprintf(fArff, '%f,', features(i,j));
+        end
         
     end
     fprintf(fArff, '%s\n', labels{i});

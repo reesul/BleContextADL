@@ -24,7 +24,7 @@ for i=1:size(testingRecords,2)
     end
     
     if ~validContext
-        subsets{1} = [subsets{1}, i]
+        subsets{1} = [subsets{1}, i];
     end
     
 end

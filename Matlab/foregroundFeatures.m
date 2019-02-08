@@ -10,7 +10,7 @@ accFeatures =[];
 gyroFeatures =[]; 
 heartrateFeatures =[];
 
-rawData = cell(4,2,0); 
+rawData = cell(4,3,0); 
 
 r=1; %counter for the records
 while r<=size(records,2)
@@ -72,7 +72,7 @@ function [rawData] = dayOfData(records, basepath, windowSize)
     [hrdata, hrtime, hrtimeStr] = getRawHR(strcat(basepath,hrfile));
 %     hrFeat = HRFeatures(hrdata, hrtime, recordTimes, windowSize);
     
-    rawData = {gdata, gtime; adata, atime; hrdata, hrtime};
+    rawData = {gdata, gtime, gtimeStr; adata, atime, atimeStr; hrdata, hrtime, hrtimeStr};
     
 end
 
@@ -80,12 +80,15 @@ function [rawData] = appendData(rawData, rawDaysData, recordInd)
 %gyro
 rawData(1,1,end+1) = rawDaysData(1,1);
 rawData(1,2,end) = rawDaysData(1,2);
+rawData(1,3,end) = rawDaysData(1,3);
 %acc
 rawData(2,1,end) = rawDaysData(2,1);
 rawData(2,2,end) = rawDaysData(2,2);
+rawData(2,3,end) = rawDaysData(2,3);
 %hr
 rawData(3,1,end) = rawDaysData(3,1);
 rawData(3,2,end) = rawDaysData(3,2);
+rawData(3,3,end) = rawDaysData(3,3);
 %record indexes
 rawData{4,1,end} = recordInd(1);
 rawData{4,2,end} = recordInd(2);

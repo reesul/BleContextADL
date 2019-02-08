@@ -1,6 +1,7 @@
-function [features, timeInfo] = processIMU(records, rawSensorData, windowSize, activitiesToShow)
+function [features, timeInfo, dataWindows] = processIMU(records, rawSensorData, windowSize, activitiesToShow)
 
 features = [];
+dataWindows = cell(0,1);
 timeInfo = {};
 for i=1:size(rawSensorData,3)
     
@@ -8,9 +9,10 @@ for i=1:size(rawSensorData,3)
    r = dayOfRawData{4,1};
    lastR = dayOfRawData{4,2};
    
-   [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime, recordTimeStr] = dayOfData(dayOfRawData, records(:,r:lastR), windowSize, activitiesToShow);
+   [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime, recordTimeStr, awindows, gwindows] = dayOfData(dayOfRawData, records(:,r:lastR), windowSize, activitiesToShow);
    features = [features; [afeat, gfeat]];
    timeInfo = [timeInfo; [recordTimeStr, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime] ];
+   dataWindows = [dataWindows; [awindows, gwindows]];
    
 end
 
@@ -19,12 +21,14 @@ end
 
 
 
-function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime, recordTimeStr] = dayOfData(sensorData, records, windowSize, activitiesToShow)
+function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime, recordTimeStr, aWindows, gWindows] = dayOfData(sensorData, records, windowSize, activitiesToShow)
 
     gdata = sensorData{1,1};
     gtime = sensorData{1,2};
+    gtimeStr = sensorData{1,3};
     adata = sensorData{2,1};
     atime = sensorData{2,2};
+    atimeStr = sensorData{2,3};
     
     %include magnitude of the signals
     gmagData = sqrt(gdata(:,1).^2+ gdata(:,2).^2+ gdata(:,3).^2);
@@ -35,6 +39,8 @@ function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwin
     %use record times to get windows of gdata, adata
     recordTimes = cell2mat(records(2,:));
     numWindows = length(recordTimes);
+    aWindows = cell(length(recordTimes),1);
+    gWindows = cell(length(recordTimes),1);
     
     afeat = zeros(numWindows, length(imuFeatureWindow([], true)));
     gfeat = zeros(numWindows, length(imuFeatureWindow([], false)));
@@ -62,6 +68,8 @@ function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwin
             gwindowEndTime{w} = num2date(0);
             awindowStartTime{w} = num2date(0);
             awindowEndTime{w} = num2date(0);
+            aWindows{w} = [];
+            gWindows{w} = [];
 %             features = [features; f];
             continue;
         end
@@ -78,8 +86,12 @@ function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwin
         gfeat(w,:) = imuFeatureWindow(gwindow, false);
         afeat(w,:) = imuFeatureWindow(awindow, true);
         
+        aWindows{w} = awindow;
+        gWindows{w} = gwindow;
+        
         if any(strcmp(activitiesToShow, records(end-1,w)))
             plotIMU(gwindow, awindow, records(end-1,w), recordTimes(w));
+            pause;
         end
     
     end
@@ -96,6 +108,8 @@ function [] = plotIMU(gdata, adata, label, recordTime)
 
     [apsd, afreq] = getPSD(adata);
     [gpsd, gfreq] = getPSD(gdata);
+    apsd = apsd(1:length(afreq),:);
+    gpsd = gpsd(1:length(gfreq),:);
 
     figure(1)
     subplot(4,2,1)
@@ -168,14 +182,14 @@ function [] = plotIMU(gdata, adata, label, recordTime)
     xlabel('frequency')
 
 
-    pause;
+    
 end
 
 function [psd, freq] = getPSD(window)
 
     ignoreInd = 20;
 
-    Fs = 10; %sampled at about 20 hz
+    Fs = 20; %sampled at about 20 hz
     N=2000; %
     ft = fft(window, N); %take fft along the magnitude
     
@@ -183,7 +197,7 @@ function [psd, freq] = getPSD(window)
     psd = psd(ignoreInd+1:N/2+1,:); %input is real valued, so fft is symmetric and only the first half (minus DC) needs to be considered
     pLen = length(psd); %this will be N/2
     
-    freq = Fs/N*ignoreInd : Fs/N : Fs/2;
+    freq = Fs/N*ignoreInd : Fs/N : Fs/(2*2); %only show up to 5Hz, because 5-10 has virtually no information
     
     
 

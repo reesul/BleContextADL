@@ -115,8 +115,9 @@ locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'clas
 %% Extract features for IMU and heartrate
 
 rawSensorData = foregroundFeatures(records, datapath, windowSize); %only want the raw data from this, calculate features separately on next line
-imuFeatures = processIMU(records, rawSensorData, windowSize, {});
 
+imuFeatures = processIMU(records, rawSensorData, windowSize, {});
+[hrFeatures, hrTimes] = processHR(records, rawSensorData, windowSize);
 %% Extract statistical features for BLE
 bleFeatures = statisticalBleFeat(records);
 
@@ -124,12 +125,15 @@ bleFeatures = statisticalBleFeat(records);
 % [~, nonEmptyRecordInd] = removeEmptyInstances([imuFeatures, heartrateFeatures]);
 [~, nonEmptyRecordInd] = removeEmptyInstances(imuFeatures);
 
-imuFeatures = imuFeatures(nonEmptyRecordInd, :);
-bleFeatures = bleFeatures(nonEmptyRecordInd, :);
 finalRecords = records(:, nonEmptyRecordInd);
+imuFeatures = imuFeatures(nonEmptyRecordInd, :);
+imuTimes = imuTimes(nonEmptyRecordInd, :);
+hrFeatures = hrFeatures(nonEmptyRecordInd, :);
+bleFeatures = bleFeatures(nonEmptyRecordInd, :);
 
-% normalize features
+%normalize the imu features
 imuFeatures = normalize(imuFeatures, 'range');
+hrFeatures = normalize(hrFeatures, 'range');
 bleFeatures = normalize(bleFeatures, 'range');
 
 %% Separate into training and testing datasets
@@ -153,8 +157,8 @@ testingRecords = finalRecords(:,endTrainIndex+1:end);
 %apply the same split to the other features
 imuFeaturesTrain = imuFeatures(1:endTrainIndex,:);
 imuFeaturesTest = imuFeatures(endTrainIndex+1:end,:);
-% hrFeaturesTrain = heartrateFeatures(1:endTrainIndex,:);
-% hrFeaturesTest = heartrateFeatures(i+endTrainIndex:end,:);
+hrFeaturesTrain = hrFeatures(1:endTrainIndex,:);
+hrFeaturesTest = hrFeatures(i+endTrainIndex:end,:);
 bleFeaturesTrain = bleFeatures(1:endTrainIndex,:);
 bleFeaturesTest = bleFeatures(endTrainIndex+1:end,:);
 
@@ -177,7 +181,8 @@ for l=1:length(activityLabelNames)
 end
 
 %% Calculate Bayesian probabilities and resulting 3-d matrix to represent (2-D for each record) the probability of P(activity | pattern)
-[patternPr, allPatterns] = patternBayes(ruleSets, trainingRecords, activityLabelNames);
+% [patternPr, allPatterns] = patternBayes(ruleSets, trainingRecords, activityLabelNames);
+[patternPr, allPatterns] = patternBayes(Patterns, trainingRecords, activityLabelNames);
 cTrainingRaw = cell(size(trainingRecords,2),4);
 trainingRecordMtx = recordMatrix(trainingRecords);
 
@@ -228,29 +233,46 @@ for i=1:size(classifierIndSets,1)
     end
     
     % training set first
-    trInd = trainingSubsets{i,2};
-    classifierIndSets{i,1} = trainingSubsets{i,2};
-    classifierFeatureSets{i,1} = [imuFeaturesTrain(trInd,:), bleFeaturesTrain(trInd,:), contextFeaturesTrain(trInd,:)];
-    classifierLabels{i,1} = trainingRecords(end-1, trInd)';
+% %     trInd = trainingSubsets{i,2};
+% %     classifierIndSets{i,1} = trainingSubsets{i,2};
+% % %     classifierFeatureSets{i,1} = [imuFeaturesTrain(trInd,:), bleFeaturesTrain(trInd,:), contextFeaturesTrain(trInd,:)];
+% %     classifierFeatureSets{i,1} = [imuFeaturesTrain(trInd,:), hrFeatures(trInd,:), bleFeaturesTrain(trInd,:), contextFeaturesTrain(trInd,:)];
+% %     classifierLabels{i,1} = trainingRecords(end-1, trInd)';
+    ind = false(size(trainingRecords,2),1);
+    %first do training data
+    for j=1:size(trainingRecords,2)
+        recordLabel = trainingRecords(end-1,j);
+        if ismember(recordLabel, labels)
+            ind(j) = true;
+        end
+    end
     
-        % training set first
+    if all(strcmp(labels, 'null')) || isempty(labels)
+        ind = true(size(trainingRecords,2),1);
+    end
+    
+    classifierIndSets{i,1} = ind;
+    
+    %use context features
+    classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:), contextFeaturesTrain(ind,:)];
+    %don't use context features
+%     classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:)];
+
+    classifierLabels{i,1} = trainingRecords(end-1,ind)';
+    
+        % testing set 
     tstInd = testingSubsets{i};
     classifierIndSets{i,2} = tstInd;
-    classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), bleFeaturesTest(tstInd,:), contextFeaturesTest(tstInd,:)];
-    classifierLabels{i,2} = testingRecords(end-1, tstInd)';
     
-%     labels = sharedContextLabels{i};
-%     ind = false(size(trainingRecords,2),1);
-%     %first do training data
-%     for j=1:size(trainingRecords,2)
-%         recordLabel = trainingRecords(end-1,j);
-%         if ismember(recordLabel, labels)
-%             ind(j) = true;
-%         end
-%     end
-%     classifierIndSets{i,1} = ind;
-%     classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:), contextFeaturesTrain(ind,:)];
-%     classifierLabels{i,1} = trainingRecords(end-1,ind)';
+     %use context features
+    classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), bleFeaturesTest(tstInd,:), contextFeaturesTest(tstInd,:)];  
+    %don't use context features
+%     classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), bleFeaturesTest(tstInd,:)];
+%     classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), hrFeatures(tstInd,:), bleFeaturesTest(tstInd,:), contextFeaturesTest(tstInd,:)];
+   
+classifierLabels{i,2} = testingRecords(end-1, tstInd)';
+    
+
 %     
 %     ind = false(size(testingRecords,2),1);
 %     %first do training data
@@ -276,7 +298,7 @@ end
 
 
 for i=1:size(classifierFeatureSets,1)
-    filename = 'sharedContextClassifiers_2mWin_2-1\';
+    filename = 'SharedContextClassifiers_SinglePatterns_ContextFeat_2-7\';
     labels = sharedContextLabels{i};
     
     if isempty(labels)

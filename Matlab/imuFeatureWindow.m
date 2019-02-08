@@ -54,14 +54,14 @@ function [feat] = imuFeatureWindow(window, isAcc)
     freq = Fs/N*ignorePsdInd : Fs/N : Fs/2;
     
     %Take bins for 0-1 Hz (ignoring DC component, so 0+), 1-2, 2-5, and 5-10 
-    bin_0_1 = mean(psd(1:round(pLen/10),:),1);
+    bin_0_05 = mean(psd(1:round(pLen/20),:),1);
+    bin_05_1 = mean(psd(round(pLen/20)+1:round(pLen/10),:),1);
     bin_1_2 = mean(psd(round(pLen/10)+1:round(pLen/5),:),1);
-    bin_2_5 = mean(psd(round(pLen/5)+1:round(pLen/2),:),1);
-    bin_5_10 = mean(psd(round(pLen/2)+1:end,:),1);
+    bin_2_5 = mean(psd(round(pLen/5)+1:end,:),1);
     
     %fidn the frequency at which the maximum component occurs
     [~, ind] = max(psd);
     maxFreq = freq(ind);
     
-    feat = [avg, st_dev, root_mean, mean_cross_rate, variance, maxVal, minVal, ar10, maxFreq, bin_0_1, bin_1_2, bin_2_5, bin_5_10];
+    feat = [avg, st_dev, root_mean, mean_cross_rate, variance, maxVal, minVal, ar10, maxFreq, bin_0_05, bin_05_1, bin_1_2, bin_2_5];
 end

@@ -117,6 +117,7 @@ locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'clas
 rawSensorData = foregroundFeatures(records, datapath, windowSize); %only want the raw data from this, calculate features separately on next line
 
 [imuFeatures, imuTimes] = processIMU(records, rawSensorData, windowSize, {});
+[hrFeatures, hrTimes] = processHR(records, rawSensorData, windowSize);
 
 %% Extract statistical features for BLE
 bleFeatures = statisticalBleFeat(records);
@@ -125,15 +126,17 @@ bleFeatures = statisticalBleFeat(records);
 % [~, nonEmptyRecordInd] = removeEmptyInstances([imuFeatures, heartrateFeatures]);
 [~, nonEmptyRecordInd] = removeEmptyInstances(imuFeatures);
 
+finalRecords = records(:, nonEmptyRecordInd);
 imuFeatures = imuFeatures(nonEmptyRecordInd, :);
 imuTimes = imuTimes(nonEmptyRecordInd, :);
-finalRecords = records(:, nonEmptyRecordInd);
+hrFeatures = hrFeatures(nonEmptyRecordInd, :);
 bleFeatures = bleFeatures(nonEmptyRecordInd, :);
-
 
 %normalize the imu features
 imuFeatures = normalize(imuFeatures, 'range');
+hrFeatures = normalize(hrFeatures, 'range');
 bleFeatures = normalize(bleFeatures, 'range');
+
 
 %% Separate into training and testing datasets
 split = 0.75;
@@ -156,8 +159,8 @@ testingRecords = finalRecords(:,endTrainIndex+1:end);
 %apply the same split to the other features
 imuFeaturesTrain = imuFeatures(1:endTrainIndex,:);
 imuFeaturesTest = imuFeatures(endTrainIndex+1:end,:);
-% hrFeaturesTrain = heartrateFeatures(1:endTrainIndex,:);
-% hrFeaturesTest = heartrateFeatures(i+endTrainIndex:end,:);
+hrFeaturesTrain = hrFeatures(1:endTrainIndex,:);
+hrFeaturesTest = hrFeatures(1+endTrainIndex:end,:);
 bleFeaturesTrain = bleFeatures(1:endTrainIndex,:);
 bleFeaturesTest = bleFeatures(endTrainIndex+1:end,:);
 
@@ -214,11 +217,13 @@ contextFeaturesTest = contextFeatures(size(contextFeaturesTrain,1)+1:end,:);
 %% combine and normalize features, and then Generate files for Weka
 
 % featTrain = removeEmptyInstances([imuFeaturesTrain, contextFeaturesTrain]);
-% featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);
-featTrain = [imuFeaturesTrain, contextFeaturesTrain, bleFeaturesTrain];
-featTest = [imuFeaturesTest, contextFeaturesTest, bleFeaturesTest];
+% featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);% featTrain = [imuFeaturesTrain, contextFeaturesTrain, bleFeaturesTrain];
+% featTest = [imuFeaturesTest, contextFeaturesTest, bleFeaturesTest];
 
-filename = 'twoMinWindows_1-31';
+featTrain = [imuFeaturesTrain, hrFeaturesTrain, contextFeaturesTrain, bleFeaturesTrain];
+featTest = [imuFeaturesTest, hrFeaturesTest, contextFeaturesTest, bleFeaturesTest];
+
+filename = 'addedHR_2-4';
 
 wekaDataBle(filename, featTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
 wekaDataBle(filename, featTest, testingRecords(end-1,:), activityLabelNames, false);
