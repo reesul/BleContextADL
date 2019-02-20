@@ -134,7 +134,7 @@ CMnull = [  18  1  0  8  0  0  4  0  5;  2 30  0  3  0  0  3  0  0;  0  0  0  0 
 
 CMtotalContextGreedy = CMclass+CMclass_meeting+CMclass_walking+CMcooking_schoolwork+CMdriving+CMexercising+CMmeeting+CMmeeting_research+CMnull;
 [acc, wacc, acc_per, f1, wf1, f1_per] = cmStats(CMtotalContextGreedy)
-contextGreedyResults = {acc_NoCF, wacc_NoCF, acc_per_NoCF, f1_NoCF, wf1_NoCF, f1_per_NoCF};
+contextGreedyResults = {acc, wacc, acc_per, f1, wf1, f1_per};
 
 
 % test set, context features omitted
