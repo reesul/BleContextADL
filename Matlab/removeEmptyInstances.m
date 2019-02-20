@@ -1,4 +1,4 @@
-function [features, indexes] = removeEmptyInstances(initFeatures)
+function [indexes] = removeEmptyInstances(initFeatures)
 
 nonNullInd = false(size(initFeatures,1),1);
 for i=1:length(nonNullInd)
@@ -9,8 +9,10 @@ for i=1:length(nonNullInd)
     end
 end
 
-features = initFeatures(nonNullInd,:);
-indexes = find(nonNullInd);
+% features = initFeatures(nonNullInd,:);
+% indexes = find(nonNullInd);
+
+indexes = nonNullInd;
 
 
 

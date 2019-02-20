@@ -116,14 +116,15 @@ locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'clas
 
 rawSensorData = foregroundFeatures(records, datapath, windowSize); %only want the raw data from this, calculate features separately on next line
 
-imuFeatures = processIMU(records, rawSensorData, windowSize, {});
+[imuFeatures, imuTimes] = processIMU(records, rawSensorData, windowSize, {});
 [hrFeatures, hrTimes] = processHR(records, rawSensorData, windowSize);
 %% Extract statistical features for BLE
 bleFeatures = statisticalBleFeat(records);
 
 %% get rid of instances with missing data; normalize features
 % [~, nonEmptyRecordInd] = removeEmptyInstances([imuFeatures, heartrateFeatures]);
-[~, nonEmptyRecordInd] = removeEmptyInstances(imuFeatures);
+nonEmptyRecordInd = removeEmptyInstances(imuFeatures);
+% nonEmptyRecordInd = logical(nonEmptyRecordInd);
 
 finalRecords = records(:, nonEmptyRecordInd);
 imuFeatures = imuFeatures(nonEmptyRecordInd, :);
@@ -218,6 +219,8 @@ contextFeaturesTest = contextFeatures(size(contextFeaturesTrain,1)+1:end,:);
  %minimum number of instances for a subset to be valid, otherwise consider
  %it an outlier, and that it has no context
 sizeThreshold = 50;
+useContextFeatures = false;
+
 
 [trainingSubsets, sharedContextLabels] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold);
 [testingSubsets] = partitionTestData(testingRecords, allPatterns, patternPr, sharedContextLabels, activityLabelNames);
@@ -254,9 +257,12 @@ for i=1:size(classifierIndSets,1)
     classifierIndSets{i,1} = ind;
     
     %use context features
-    classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:), contextFeaturesTrain(ind,:)];
+    if useContextFeatures
+        classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:), contextFeaturesTrain(ind,:)];
     %don't use context features
-%     classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:)];
+    else
+        classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:)];
+    end
 
     classifierLabels{i,1} = trainingRecords(end-1,ind)';
     
@@ -264,11 +270,14 @@ for i=1:size(classifierIndSets,1)
     tstInd = testingSubsets{i};
     classifierIndSets{i,2} = tstInd;
     
+    if useContextFeatures
      %use context features
-    classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), bleFeaturesTest(tstInd,:), contextFeaturesTest(tstInd,:)];  
+        classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), bleFeaturesTest(tstInd,:), contextFeaturesTest(tstInd,:)];  
     %don't use context features
-%     classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), bleFeaturesTest(tstInd,:)];
-%     classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), hrFeatures(tstInd,:), bleFeaturesTest(tstInd,:), contextFeaturesTest(tstInd,:)];
+    else
+        classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), bleFeaturesTest(tstInd,:)];
+    end
+% %     classifierFeatureSets{i,2} = [imuFeaturesTest(tstInd,:), hrFeatures(tstInd,:), bleFeaturesTest(tstInd,:), contextFeaturesTest(tstInd,:)];
    
 classifierLabels{i,2} = testingRecords(end-1, tstInd)';
     
@@ -298,7 +307,7 @@ end
 
 
 for i=1:size(classifierFeatureSets,1)
-    filename = 'SharedContextClassifiers_SinglePatterns_ContextFeat_2-7\';
+    filename = 'SharedContextClassifiers_HAC_2-11\';
     labels = sharedContextLabels{i};
     
     if isempty(labels)

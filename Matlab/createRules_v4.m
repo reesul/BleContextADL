@@ -29,10 +29,14 @@ ruleSets = cell(numBags, 1);
 baggedRecordMtxes = zeros([numBags, size(supportMtx)]);
 randFeatureSets = cell(numBags,1);
 
-for i=1:numBags
-    [ruleSets{i}, baggedRecordMtxes(i,:,:), randFeatureSets{i}] = generateRules(supportMtx, binLabelsInd, iouThresh, minSupport, randFeatureSplit);
+if numBags == 1
+    ruleSets{1} = generateRules(supportMtx, binLabelsInd, iouThresh, minSupport, 1, true);
+else
+    for i=1:numBags
+        [ruleSets{i}, baggedRecordMtxes(i,:,:), randFeatureSets{i}] = generateRules(supportMtx, binLabelsInd, iouThresh, minSupport, randFeatureSplit, false);
+    end
 end
-
+    
 %% combine the rulesets from individual bags 
 finalRuleSet = cell(0,4);
 
@@ -72,22 +76,24 @@ end
 
 
 %% calculate a relative frequency for each pattern (necessary?)
-for i=1:size(finalRuleSet,1)
-    rule = finalRuleSet{i,1};
-    finalRuleSet{i,4} = 0;
-    for j=1:numBags
-        randFeatures = randFeatureSets{j};
-        if all(ismember(rule, randFeatures))
-            finalRuleSet{i,4} = finalRuleSet{i,4}+1;
+if numBags > 1
+    for i=1:size(finalRuleSet,1)
+        rule = finalRuleSet{i,1};
+        finalRuleSet{i,4} = 0;
+        for j=1:numBags
+            randFeatures = randFeatureSets{j};
+            if all(ismember(rule, randFeatures))
+                finalRuleSet{i,4} = finalRuleSet{i,4}+1;
+            end
         end
-    end
-    %replace count with a ratio
-    if finalRuleSet{i,4}==0
-        disp('pattern impossible to find??');
-    end
-    
-    finalRuleSet{i,3} = finalRuleSet{i,3} / finalRuleSet{i,4};
+        %replace count with a ratio
+        if finalRuleSet{i,4}==0
+            disp('pattern impossible to find??');
+        end
 
+        finalRuleSet{i,3} = finalRuleSet{i,3} / finalRuleSet{i,4};
+
+    end
 end
 
 % fprintf('Created %d pattern(s) for %s', size(finalRuleSet,1), classLabel{1});
@@ -101,11 +107,16 @@ ruleSet = finalRuleSet(:, 1:3); %remove unnecessary columns
 
 end
 
-function [ruleSet, supportMtx, randFeatures] = generateRules(recordMtx, originalLabelsInd, iouThresh, minSupport, randomFeaturePercentage)
+function [ruleSet, supportMtx, randFeatures] = generateRules(recordMtx, originalLabelsInd, iouThresh, minSupport, randomFeaturePercentage, noBagging)
 %% make a bag from the data set, and create a set of rules
 
-baggedSet = randi(size(recordMtx,1),size(recordMtx,1),1);
-
+if noBagging
+    baggedSet = 1:size(recordMtx,1); 
+else    
+    baggedSet = randi(size(recordMtx,1),size(recordMtx,1),1);
+end
+    
+    
 supportMtx = recordMtx(baggedSet,:);
 summedSM = sum(supportMtx);
 
@@ -128,7 +139,7 @@ discardedRules = cell(0,4);
 index = 1;
 %continue creating rules until they exist such that all examples are
 %covered by some rule
-while ~all(coveredRecords) && summedSortedSupport(index)>=minSupport
+while ~all(coveredRecords) && summedSortedSupport(index)>=minSupport*size(supportMtx,1)
 % while ~all(coveredRecords) && summedSortedSupport(index)/size(supportMtx,1)>=minSupport %minSupport is percentage
     
     examples = find(sortedSupport(:,index)); %set of examples this pattern applies to

@@ -166,7 +166,7 @@ bleFeaturesTest = bleFeatures(endTrainIndex+1:end,:);
 
 %% Build classification rules to represent context for each class
 ruleSets = cell(length(activityLabelNames),1);
-minSupport = 5; %lower limit to number of examples needed for pattern to be valid
+minSupport = 0.02; %lower limit to number of examples needed for pattern to be valid
 iouThreshold = 0.75;
 numBags = 20;
 randFeatSplit = 0.6; %percentage of valid features/beacons to consider
@@ -220,10 +220,10 @@ contextFeaturesTest = contextFeatures(size(contextFeaturesTrain,1)+1:end,:);
 % featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);% featTrain = [imuFeaturesTrain, contextFeaturesTrain, bleFeaturesTrain];
 % featTest = [imuFeaturesTest, contextFeaturesTest, bleFeaturesTest];
 
-featTrain = [imuFeaturesTrain, hrFeaturesTrain, contextFeaturesTrain, bleFeaturesTrain];
-featTest = [imuFeaturesTest, hrFeaturesTest, contextFeaturesTest, bleFeaturesTest];
+featTrain = [imuFeaturesTrain, contextFeaturesTrain, bleFeaturesTrain];
+featTest = [imuFeaturesTest,  contextFeaturesTest, bleFeaturesTest];
 
-filename = 'addedHR_2-4';
+filename = 'finalTestAll_2-12';
 
 wekaDataBle(filename, featTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
 wekaDataBle(filename, featTest, testingRecords(end-1,:), activityLabelNames, false);

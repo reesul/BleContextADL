@@ -72,16 +72,3 @@ shareContext = subsets(:,1);
 
 end
 
-% shareContext = unique(shareContext)
-% for i=1:length(shareContext)
-%     l = shareContext{i};
-%     if isempty(l) || length(l) == 1
-%         continue;
-%     end
-%     
-%     s = l{1};
-%     for j=2:length(l)
-%         s = sprintf('%s, %s', s, l{j});
-%     end
-%     disp(s);
-% end

@@ -1,18 +1,18 @@
 %% Turnover measure of how the set of beacons in the user's range changes between windows of time
-function [turnover] = beaconTurnover(MACs, pastMACs)
+function [turnover1, turnover2] = beaconTurnover(MACs, pastMACs, oldR, newR)
     
     MACs = unique(MACs);
     pastMACs = unique(pastMACs);
     
     numInCommon = length(intersect(MACs, pastMACs));
-    turnover = numInCommon / (length(MACs) + length(pastMACs) - numInCommon);
+    turnover1 = numInCommon / (length(MACs) + length(pastMACs) - numInCommon);
     
-%     sumXor=sum(bitxor(oldR,newR));
-%     sumOr = sum(bitor(oldR,newR));
-%     
-%     turnover = sumXor/sumOr;
-%     if isnan(turnover) 
-%         turnover=1;
-%     end
+    sumAnd=sum(bitand(oldR,newR));
+    sumOr = sum(bitor(oldR,newR));
+    
+    turnover2 = sumAnd/sumOr;
+    if isnan(turnover2) 
+        turnover2=0;
+    end
    
 end

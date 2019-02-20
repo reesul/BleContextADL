@@ -64,23 +64,23 @@ for i=1:size(records,2)
     end
     
     nonNullSet(i) = true;
-    if numBeacons==1
-        records{4,i} = 0; %only one beacon, std is 0, mean doesn't matter
-        continue;
-    end
+%     if numBeacons==1
+%         records{4,i} = 0; %only one beacon, std is 0, mean doesn't matter
+%         continue;
+%     end
     
     
-    pairs = zeros(1,nchoosek(numBeacons,2));
-    indexes = find(r);
-    pairsIndex = 1;
-    for j=1:(length(indexes)-1)
-        for k=(j+1):length(indexes)
-            pairs(pairsIndex) = supportArr(indexes(j),indexes(k));
-            pairsIndex = pairsIndex+1;
-        end
-    end
-    
-    records{4,i} = std(pairs)/mean(pairs);
+%     pairs = zeros(1,nchoosek(numBeacons,2));
+%     indexes = find(r);
+%     pairsIndex = 1;
+%     for j=1:(length(indexes)-1)
+%         for k=(j+1):length(indexes)
+%             pairs(pairsIndex) = supportArr(indexes(j),indexes(k));
+%             pairsIndex = pairsIndex+1;
+%         end
+%     end
+%     
+%     records{4,i} = std(pairs)/mean(pairs);
     
 end
 
@@ -117,13 +117,12 @@ for i=1:length(bleData)
 
            %5th value is beacon turnover, which is 0 for the first
            %record of the day (size==1), or if the time difference
-           %between window is larger than the window size (+10% due to
-           %BLE scanning characteristics
+           %between window is larger than the window size 
            if ( size(records,2)==1 || (winStart-records{2,end-1} > 2*windowSize) ) 
+               records{4,end} = 0;
                records{5,end} = 0;
            else
-%                records{5,end} = beaconTurnover(records{3,end-1},br);
-                records{5,end} = beaconTurnover(windowMACs, pastWindowMACs);
+                [records{5,end}, records{4,end}] = beaconTurnover(windowMACs, pastWindowMACs, records{3,end-1},br);
            end
            pastWindowMACs = windowMACs;
            windowMACs = {};
