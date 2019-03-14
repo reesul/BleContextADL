@@ -14,6 +14,9 @@
 %  v4: Build binary classifiers using clustering and decision tree for each
 %       class
 %  v5: Use rule-based classification to recognize context
+%       testing version: perform augmentations on dataset to test different
+%           scenarios that may occur in realistic datasets (but not the one
+%           first developed for this study).
 
 %% Options
 
@@ -35,7 +38,8 @@ dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
 
-for d=1:size(dataDirs,1)
+% for d=1:size(dataDirs,1)
+for d=1:18 %build only on training set
     if contains(dataDirs(d,:),'-')
         blePath = strcat(datapath,strtrim(dataDirs(d,:)));
         blePath = strcat(blePath,'\');
@@ -127,14 +131,15 @@ nonEmptyRecordInd = removeEmptyInstances(imuFeatures);
 % nonEmptyRecordInd = logical(nonEmptyRecordInd);
 
 finalRecords = records(:, nonEmptyRecordInd);
+ogFinalRecords = finalRecords;
 imuFeatures = imuFeatures(nonEmptyRecordInd, :);
 imuTimes = imuTimes(nonEmptyRecordInd, :);
-hrFeatures = hrFeatures(nonEmptyRecordInd, :);
+% hrFeatures = hrFeatures(nonEmptyRecordInd, :);
 bleFeatures = bleFeatures(nonEmptyRecordInd, :);
 
 %normalize the imu features
 imuFeatures = normalize(imuFeatures, 'range');
-hrFeatures = normalize(hrFeatures, 'range');
+% hrFeatures = normalize(hrFeatures, 'range');
 bleFeatures = normalize(bleFeatures, 'range');
 
 %% Separate into training and testing datasets
@@ -158,13 +163,28 @@ testingRecords = finalRecords(:,endTrainIndex+1:end);
 %apply the same split to the other features
 imuFeaturesTrain = imuFeatures(1:endTrainIndex,:);
 imuFeaturesTest = imuFeatures(endTrainIndex+1:end,:);
-hrFeaturesTrain = hrFeatures(1:endTrainIndex,:);
-hrFeaturesTest = hrFeatures(i+endTrainIndex:end,:);
+% hrFeaturesTrain = hrFeatures(1:endTrainIndex,:);
+% hrFeaturesTest = hrFeatures(i+endTrainIndex:end,:);
 bleFeaturesTrain = bleFeatures(1:endTrainIndex,:);
 bleFeaturesTest = bleFeatures(endTrainIndex+1:end,:);
 
-%% Build classification rules to represent context for each class
-ruleSets = cell(length(activityLabelNames),1);
+
+%% Augment set of records to test different behaviors of chosen methods
+
+use1 = false;
+use2 = false;
+use3 = false;
+[augRecords, augTrainRecords, augTestRecords] = augmentRecords_v2(finalRecords, trainingRecords, testingRecords, use1, use2, use3);
+
+useAugmented = true;
+if useAugmented
+    finalRecords = augRecords;
+    trainingRecords = augTrainRecords;
+    testingRecords = augTestRecords;
+end
+
+%% Build classification rules to represent context for each class using greedy search
+Patterns_Greedy = cell(length(activityLabelNames),1);
 minSupport = 0.02; %lower limit to number of examples needed for pattern to be valid
 iouThreshold = 0.75;
 numBags = 20;
@@ -175,16 +195,31 @@ randFeatSplit = 0.6; %percentage of valid features/beacons to consider
 listOfPatterns = {};
 for i=1:length(activityLabelNames)
 
-    ruleSets{i,:} = createRules_v4(trainingRecords, activityLabelNames(i), minSupport, iouThreshold, numBags, randFeatSplit);
+    Patterns_Greedy{i,:} = createRules_v4(trainingRecords, activityLabelNames(i), minSupport, iouThreshold, numBags, randFeatSplit);
 %     ruleSets(l,:) = {createRules_v3(trainingRecords, activityLabelNames(l), minSupport, iouThreshold)};
 %     ruleSets(l,:) = {createRules_v2(records, activityLabelNames(l))};
-    listOfPatterns = [listOfPatterns; ruleSets{i}(:,1)];
+    listOfPatterns = [listOfPatterns; Patterns_Greedy{i}(:,1)];
 end
 
-
+%% HAC methods of pattern extraction
+IOUthreshold = 0.65;
+Patterns_Single = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, 0.75, true);
+% Patterns_HAC = clusterRecordsFunc(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, false);
+% Patterns_HAC = clusterRecordsFunc_v2(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, false);
+Patterns_Comp = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, IOUthreshold, false);
 %% Calculate Bayesian probabilities and resulting 3-d matrix to represent (2-D for each record) the probability of P(activity | pattern)
+patternMethod = 2; %0 is single-beacon pattern, 1 is greedy search, and 2 is HAC
+
+if patternMethod == 0
+    ruleSets = Patterns_Single;
+elseif patternMethod == 1
+    ruleSets = Patterns_Greedy;
+elseif patternMethod == 2
+    ruleSets = Patterns_Comp;
+end
+[patternPr, allPatterns, ~, gini] = patternBayes(ruleSets, trainingRecords, activityLabelNames);        
 % [patternPr, allPatterns] = patternBayes(ruleSets, trainingRecords, activityLabelNames);
-[patternPr, allPatterns] = patternBayes(Patterns, trainingRecords, activityLabelNames);
+% [patternPr, allPatterns] = patternBayes(Patterns_HAC, trainingRecords, activityLabelNames);
 cTrainingRaw = cell(size(trainingRecords,2),4);
 trainingRecordMtx = recordMatrix(trainingRecords);
 
@@ -219,16 +254,20 @@ contextFeaturesTest = contextFeatures(size(contextFeaturesTrain,1)+1:end,:);
 
  %minimum number of instances for a subset to be valid, otherwise consider
  %it an outlier, and that it has no context
-sizeThreshold = 50;
+sizeThreshold = 40;
 useContextFeatures = false;
-naive = true;
+naive = false; useLocation = false; exactTrainingSet = false;
+epsilon = .25; %parameter to reduce sensitivity to beacons that are very prevalent; achieve finer context separation
 
 if naive
-    [trainingSubsets, sharedContextLabels] = naivePartitionData(activityLabelNames, records, sizeThreshold, ruleSets);
+    [trainingSubsets, sharedContextLabels] = naivePartitionData(activityLabelNames, trainingRecords, sizeThreshold, ruleSets);
     [testingSubsets] = naivePartitionTestData(testingRecords, ruleSets, sharedContextLabels, activityLabelNames);
+elseif useLocation
+    [trainingSubsets, sharedContextLabels] = locationalPartition(trainingRecords);
+    [testingSubsets] = locationalTestPartition(testingRecords, sharedContextLabels);
 else
-    [trainingSubsets, sharedContextLabels] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold);
-    [testingSubsets] = partitionTestData(testingRecords, allPatterns, patternPr, sharedContextLabels, activityLabelNames);
+    [trainingSubsets, sharedContextLabels] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold, epsilon);
+    [testingSubsets] = partitionTestData(testingRecords, allPatterns, patternPr, sharedContextLabels, activityLabelNames, epsilon);
 end
 
 classifierIndSets = cell(size(sharedContextLabels, 1), 2);
@@ -243,35 +282,44 @@ for i=1:size(classifierIndSets,1)
     end
     
     % training set first
-% %     trInd = trainingSubsets{i,2};
-% %     classifierIndSets{i,1} = trainingSubsets{i,2};
-% % %     classifierFeatureSets{i,1} = [imuFeaturesTrain(trInd,:), bleFeaturesTrain(trInd,:), contextFeaturesTrain(trInd,:)];
-% %     classifierFeatureSets{i,1} = [imuFeaturesTrain(trInd,:), hrFeatures(trInd,:), bleFeaturesTrain(trInd,:), contextFeaturesTrain(trInd,:)];
-% %     classifierLabels{i,1} = trainingRecords(end-1, trInd)';
-    ind = false(size(trainingRecords,2),1);
-    %first do training data
-    for j=1:size(trainingRecords,2)
-        recordLabel = trainingRecords(end-1,j);
-        if ismember(recordLabel, labels)
-            ind(j) = true;
-        end
-    end
-    
-    if all(strcmp(labels, 'null')) || isempty(labels)
-        ind = true(size(trainingRecords,2),1);
-    end
-    
-    classifierIndSets{i,1} = ind;
-    
-    %use context features
-    if useContextFeatures
-        classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:), contextFeaturesTrain(ind,:)];
-    %don't use context features
-    else
-        classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:)];
-    end
+    if exactTrainingSet
+        trInd = trainingSubsets{i,2};
+        classifierIndSets{i,1} = trainingSubsets{i,2};
+        classifierFeatureSets{i,1} = [imuFeaturesTrain(trInd,:), bleFeaturesTrain(trInd,:)];
+    %     classifierFeatureSets{i,1} = [imuFeaturesTrain(trInd,:), hrFeatures(trInd,:), bleFeaturesTrain(trInd,:), contextFeaturesTrain(trInd,:)];
+        classifierLabels{i,1} = trainingRecords(end-1, trInd)';
+    else    
+        ind = false(size(trainingRecords,2),1);
+        %first do training data
+        for j=1:size(trainingRecords,2)
+            if useLocation
+                recordLabel = trainingRecords(end-1,j);
+                if ismember(recordLabel,trainingSubsets{i,3})
+                    ind(j)=true;
+                end
+            else
+                recordLabel = trainingRecords(end-1,j);
+                if ismember(recordLabel, labels)
+                    ind(j) = true;
+                end
+            end
 
-    classifierLabels{i,1} = trainingRecords(end-1,ind)';
+        end
+
+        if any(strcmp(labels, 'null')) || isempty(labels)
+            ind = true(size(trainingRecords,2),1);
+        end
+
+        classifierIndSets{i,1} = ind;
+        %use context features
+        if useContextFeatures
+            classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:), contextFeaturesTrain(ind,:)];
+        %don't use context features
+        else
+            classifierFeatureSets{i,1} = [imuFeaturesTrain(ind,:), bleFeaturesTrain(ind,:)];
+        end
+        classifierLabels{i,1} = trainingRecords(end-1,ind)';
+    end
     
         % testing set 
     tstInd = testingSubsets{i};
@@ -288,7 +336,6 @@ for i=1:size(classifierIndSets,1)
    
     classifierLabels{i,2} = testingRecords(end-1, tstInd)';
     
-
 %     
 %     ind = false(size(testingRecords,2),1);
 %     %first do training data
@@ -315,7 +362,7 @@ contextSeparate = true;
 
 if contextSeparate
     for i=1:size(classifierFeatureSets,1)
-        filename = 'NaiveSingle\';
+        filename = 'ScAll\ScAll_Pat_iou65_PosEps\';
         labels = sharedContextLabels{i};
 
         if isempty(labels)
@@ -333,10 +380,12 @@ if contextSeparate
     end
 
 else
-    featTrain = [imuFeaturesTrain, recordMatrix(trainingRecords), bleFeaturesTrain];
-    featTest = [imuFeaturesTest,  recordMatrix(testingRecords), bleFeaturesTest];
+%     featTrain = [imuFeaturesTrain, recordMatrix(trainingRecords), bleFeaturesTrain];%beacons as features
+%     featTest = [imuFeaturesTest,  recordMatrix(testingRecords), bleFeaturesTest];
+    featTrain = recordMatrix(trainingRecords);%only ble and imu as features
+    featTest = recordMatrix(testingRecords);
 
-    filename = 'beaconsAsFeaturesPlusStats';
+    filename = 'beaconsOnly';
 
     wekaDataBle(filename, featTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
     wekaDataBle(filename, featTest, testingRecords(end-1,:), activityLabelNames, false);

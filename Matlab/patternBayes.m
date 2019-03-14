@@ -1,19 +1,23 @@
-function [P, mergedPatterns, rawPatterns] = patternBayes(ruleSets, records, classLabels)
+function [P, mergedPatterns, rawPatterns, stats] = patternBayes(ruleSets, records, classLabels)
 
 numActivities = length(ruleSets);
 
 %% First mege all of the rule sets into a single set
-mergedPatterns = cell(0,4);
+mergedPatterns = cell(0,size(ruleSets{1},2));
 
 for i=1:size(ruleSets,1)
     rs = ruleSets{i};
 %     rs{:} = classLabels(i)
     originLabel = cell(size(rs,1), 1);
     originLabel(:) = classLabels(i);
-    mergedPatterns = [mergedPatterns; [ruleSets{i}, originLabel]];
+    if size(ruleSets{i},2)>size(ruleSets{i},1) %handle transposed patterns
+        mergedPatterns = [mergedPatterns; [ruleSets{i}', originLabel]];
+    else
+        mergedPatterns = [mergedPatterns; [ruleSets{i}, originLabel]];
+    end
 end
 
-rawPatterns = mergedPatterns
+rawPatterns = mergedPatterns;
 
 mergedPatterns = mergedPatterns(:,1:2);
 noDuplicatePatterns = cell(0,2);
@@ -72,7 +76,20 @@ for i=1:size(mergedPatterns,1)
         P(j,i) = coverage(j) / sum(coverage);
     end
 end
+
+
+giniOfPatterns = zeros(1,size(P,2)); 
+entropyOfPatterns = zeros(1,size(P,2));
+for i = 1:size(P,2)
+    [giniOfPatterns(i), entropyOfPatterns(i)] = patternEvalIndexes(P(:,i));
+end
+
+stats = [giniOfPatterns; entropyOfPatterns];
+
 return;
+end
+
+
 
 
 % %% old portion
@@ -128,3 +145,16 @@ return;
 % 
 % 
 % end
+
+function [gini, entropy] = patternEvalIndexes(p)
+
+gini = sum(p.*(1-p));
+entropy = 0;
+for i=1:length(p)
+    if p(i) > 0
+        entropy = entropy - p(i)*log(p(i))/log(length(p));
+    end
+end
+
+    
+end

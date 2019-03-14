@@ -63,10 +63,10 @@ end
 
 %apply some prior knowledge to remove certain device
 function [MACs] = findSpecialDevices(recognizedDevices)
-
+MACs = [];
 fprintf('Search for devices we have prior knowledge on such that the device should be removed from data');
-[~, values, ~] = searchDeviceMap(recognizedDevices, '09', 'LG SJ4Y(E0)');
-MACs = findMACs(values, recognizedDevices);
+% [~, values, ~] = searchDeviceMap(recognizedDevices, '09', 'LG SJ4Y(E0)');
+% MACs = findMACs(values, recognizedDevices);
 
 % for further devices to remove, concatenate onto cell array MACs
 %add more cases as they arise
@@ -75,10 +75,10 @@ MACs = findMACs(values, recognizedDevices);
 
 
 
-[~,values,~] = searchDeviceMap(recognizedDevices, '09', 'Tile');
-MACs = [MACs, findMACs(values, recognizedDevices)];
+% [~,values,~] = searchDeviceMap(recognizedDevices, '09', 'Tile');
+% MACs = [MACs, findMACs(values, recognizedDevices)];
 
-MACs = [MACs, {'00:00:00:00:00:00'}]; %because some devs are idiots and didn't assign real MAC addrress
+MACs = [MACs, {'00:00:00:00:00:00'}]; %because some devs are idiots and didn't assign real MAC address. Not even sure how those devices would function properly
 end
 
 function [b] = checkForBadMAC(badMACs, value, recognizedDevices)

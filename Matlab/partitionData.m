@@ -1,10 +1,10 @@
-function [subsets, shareContext, subsetsNotReduced] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold)
+function [subsets, shareContext, subsetsNotReduced] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold, epsilon)
 % find the activities that occur together that we would need to train
 % separate imu classifiers for
 
 
 numActivities = length(activityLabelNames);
-minP = 2/numActivities;
+minP = (1+epsilon)/numActivities;
 
 
 shareContext = {};
