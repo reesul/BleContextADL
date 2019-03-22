@@ -1,8 +1,9 @@
-function [subsets, recordDecisions] = partitionTestData(testingRecords, allPatterns, patternPr, shareContext, activities, epsilon)
+function [subsets, recordDecisions, naiveClassify] = partitionTestData(testingRecords, allPatterns, patternPr, shareContext, activities, epsilon)
 
 
 subsets = cell(1, length(shareContext));
 recordDecisions = cell(size(testingRecords,2),2);
+naiveClassify = zeros(size(testingRecords,2),1);
 
 minP = (1+epsilon)/length(activities);
 
@@ -12,6 +13,13 @@ for i=1:size(testingRecords,2)
     [prMtx, satisfiedP] = testRecord(testingRecords{3,i}, allPatterns, patternPr);
     recordDecisions{i,2} = satisfiedP;
     meanPr = mean(prMtx,2);
+    
+    if size(prMtx,2) > 1
+        [~,actWithMaxP] = max(max(prMtx,[], 2));
+    else
+        [~,actWithMaxP] = max(prMtx);
+    end
+    naiveClassify(i) = actWithMaxP ;
     
     ind = meanPr > minP;
     contextSig = activities(ind);

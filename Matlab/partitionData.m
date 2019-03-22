@@ -1,10 +1,11 @@
-function [subsets, shareContext, subsetsNotReduced] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold, epsilon)
+function [subsets, shareContext, subsetsNotReduced, naiveClassify] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold, epsilon)
 % find the activities that occur together that we would need to train
 % separate imu classifiers for
 
 
 numActivities = length(activityLabelNames);
 minP = (1+epsilon)/numActivities;
+naiveClassify = zeros(size(cTrainingRaw,2),1);
 
 
 shareContext = {};
@@ -26,6 +27,14 @@ for i=1:size(cTrainingRaw,1)
     ind = meanPr > minP;
 %     ind = ind & notTransport; % Use if ignoring transportation activities
     labels = activityLabelNames(ind);
+    
+    if size(pMtx,2) > 1
+        [~,actWithMaxP] = max(max(pMtx,[], 2));
+    else
+        [~,actWithMaxP] = max(pMtx);
+    end
+    naiveClassify(i) = actWithMaxP ;
+    
 
     isIn = false;
     
@@ -52,8 +61,11 @@ nullInd = find(cellfun(@isempty, shareContext));
 tooFewInstances = find(cellfun(@length, subsets(:,2)) < sizeThreshold);
 
 finalSubsets = cell(1,3);
-finalSubsets(1,:) = subsets(nullInd,:); %copy the catch-all context signature as the first
-
+if nullInd
+    finalSubsets(1,:) = subsets(nullInd,:); %copy the catch-all context signature as the first
+else
+    finalSubsets(1,:) = cell(1,3);
+    
 for i=1:size(subsets,1)
     if i == nullInd
         continue;

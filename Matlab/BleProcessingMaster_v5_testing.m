@@ -208,7 +208,7 @@ Patterns_Single = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(
 % Patterns_HAC = clusterRecordsFunc_v2(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, false);
 Patterns_Comp = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, IOUthreshold, false);
 %% Calculate Bayesian probabilities and resulting 3-d matrix to represent (2-D for each record) the probability of P(activity | pattern)
-patternMethod = 2; %0 is single-beacon pattern, 1 is greedy search, and 2 is HAC
+patternMethod = 3; %0 is single-beacon pattern, 1 is greedy search, and 2 is HAC
 
 if patternMethod == 0
     ruleSets = Patterns_Single;
@@ -216,6 +216,8 @@ elseif patternMethod == 1
     ruleSets = Patterns_Greedy;
 elseif patternMethod == 2
     ruleSets = Patterns_Comp;
+elseif patternMethod == 3
+    ruleSets = Patterns_HAC;
 end
 [patternPr, allPatterns, ~, gini] = patternBayes(ruleSets, trainingRecords, activityLabelNames);        
 % [patternPr, allPatterns] = patternBayes(ruleSets, trainingRecords, activityLabelNames);
@@ -257,7 +259,7 @@ contextFeaturesTest = contextFeatures(size(contextFeaturesTrain,1)+1:end,:);
 sizeThreshold = 40;
 useContextFeatures = false;
 naive = false; useLocation = false; exactTrainingSet = false;
-epsilon = .25; %parameter to reduce sensitivity to beacons that are very prevalent; achieve finer context separation
+epsilon = -.25; %parameter to reduce sensitivity to beacons that are very prevalent; achieve finer context separation
 
 if naive
     [trainingSubsets, sharedContextLabels] = naivePartitionData(activityLabelNames, trainingRecords, sizeThreshold, ruleSets);
@@ -362,7 +364,7 @@ contextSeparate = true;
 
 if contextSeparate
     for i=1:size(classifierFeatureSets,1)
-        filename = 'ScAll\ScAll_Pat_iou65_PosEps\';
+        filename = 'ScAll\ScAll_Pat_iou65_NegEps\';
         labels = sharedContextLabels{i};
 
         if isempty(labels)
