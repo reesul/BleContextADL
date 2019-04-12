@@ -3,7 +3,7 @@ function [records, allRecords] = createRecords(datapath,recognizedDevices,window
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
-records = cell(5,0); %each record is a column here; first value is timestamp of record start, second is a binary vector corresponsding to beacon presence
+records = cell(6,0); %each record is a column here; first value is timestamp of record start, second is a binary vector corresponsding to beacon presence
 countArr = zeros(numDevices);
 supportArr = zeros(numDevices);
 
@@ -121,9 +121,12 @@ for i=1:length(bleData)
            if ( size(records,2)==1 || (winStart-records{2,end-1} > 2*windowSize) ) 
                records{4,end} = 0;
                records{5,end} = 0;
+               
            else
                 [records{5,end}, records{4,end}] = beaconTurnover(windowMACs, pastWindowMACs, records{3,end-1},br);
            end
+           records{6,end} = length(windowMACs);
+           
            pastWindowMACs = windowMACs;
            windowMACs = {};
            

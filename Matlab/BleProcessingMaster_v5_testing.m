@@ -208,7 +208,7 @@ Patterns_Single = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(
 % Patterns_HAC = clusterRecordsFunc_v2(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, false);
 Patterns_Comp = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, IOUthreshold, false);
 %% Calculate Bayesian probabilities and resulting 3-d matrix to represent (2-D for each record) the probability of P(activity | pattern)
-patternMethod = 3; %0 is single-beacon pattern, 1 is greedy search, and 2 is HAC
+patternMethod = 2; %0 is single-beacon pattern, 1 is greedy search, and 2 is HAC
 
 if patternMethod == 0
     ruleSets = Patterns_Single;
@@ -360,7 +360,7 @@ end
 % featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);
 % featTrain = [imuFeaturesTrain, contextFeaturesTrain];
 % featTest = [imuFeaturesTest, contextFeaturesTest];
-contextSeparate = true;
+contextSeparate = false;
 
 if contextSeparate
     for i=1:size(classifierFeatureSets,1)
@@ -384,10 +384,10 @@ if contextSeparate
 else
 %     featTrain = [imuFeaturesTrain, recordMatrix(trainingRecords), bleFeaturesTrain];%beacons as features
 %     featTest = [imuFeaturesTest,  recordMatrix(testingRecords), bleFeaturesTest];
-    featTrain = recordMatrix(trainingRecords);%only ble and imu as features
-    featTest = recordMatrix(testingRecords);
+    featTrain = [bleFeaturesTrain, recordMatrix(trainingRecords)];%only ble and imu as features
+    featTest = [bleFeaturesTest, recordMatrix(testingRecords)];
 
-    filename = 'beaconsOnly';
+    filename = 'beaconsAsFeaturesAndStats';
 
     wekaDataBle(filename, featTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
     wekaDataBle(filename, featTest, testingRecords(end-1,:), activityLabelNames, false);

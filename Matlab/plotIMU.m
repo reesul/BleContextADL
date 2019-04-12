@@ -97,7 +97,7 @@ function [psd, freq] = getPSD(window)
     psd = psd(ignoreInd+1:N/2+1,:); %input is real valued, so fft is symmetric and only the first half (minus DC) needs to be considered
     pLen = length(psd); %this will be N/2
     
-    freq = Fs/N*ignoreInd : Fs/N : Fs/(2*2); %only show up to 5Hz, because 5-10 has virtually no information
+    freq = Fs/N*ignoreInd : Fs/N : Fs/(2*2); %only show up to 5Hz (divide by 4), because 5-10 has virtually no information
     
     
 
