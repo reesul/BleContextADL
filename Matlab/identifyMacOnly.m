@@ -1,6 +1,7 @@
 function [recognizedDevices, numUniqueDev] = identifyMacOnly(bleData, recognizedDevices, numUniqueDev, similarityThreshold)
 
 for b=1:length(bleData)
+    
    pInfo = extractFields(bleData{b});
    if isempty(pInfo) % this is the case if an empty packet is detected
        continue;
@@ -108,14 +109,17 @@ end
 if ~isempty(packetInfo('FF'))
     m_info = packetInfo('FF');
     m_info = m_info{1};
-    packetInfo('M-ID') = m_info(1:4); %pull out the manufacturer id
-    packetInfo('FF') = m_info(5:end); %no need to keep manufacturer id here
-    if strcmp(m_info(1:4), '4C00')
-        if length(m_info)<8
-            %disp('bad length subfield');
-            
-        elseif strcmp(m_info(1:8), '4C000215') %if true, this is iBeacon format
-            packetInfo('iBeacon') = m_info(9:end-2);      %extract UUID and major/minor number  
+    if length(m_info)>=4
+        
+        packetInfo('M-ID') = m_info(1:4); %pull out the manufacturer id
+        packetInfo('FF') = m_info(5:end); %no need to keep manufacturer id here
+        if strcmp(m_info(1:4), '4C00')
+            if length(m_info)<8
+                %disp('bad length subfield');
+
+            elseif strcmp(m_info(1:8), '4C000215') %if true, this is iBeacon format
+                packetInfo('iBeacon') = m_info(9:end-2);      %extract UUID and major/minor number  
+            end
         end
     end
 end

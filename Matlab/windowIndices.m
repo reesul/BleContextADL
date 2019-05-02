@@ -12,13 +12,17 @@ emptyWindows = [];
 %% get the first window separately
 % dataStartWindowDone = true;
 while true
-    %
+    
+    if timeInd > length(times) || w > length(recordTimes)
+       timeInd, recordTimes 
+    end
+    
     if (times(timeInd) < recordTimes(w))
-%         disp('data starts before first record; move on');
-        break;
+%          disp('data starts before first record; move on');
+         break;
         
     elseif (times(1) > recordTimes(w) && times(1) < endTimes(w))
-        while ~( (times(timeInd) < endTimes(w)) && times(timeInd+1) > endTimes(w) )
+        while ~( (times(timeInd) <= endTimes(w)) && times(timeInd+1) > endTimes(w) )
             timeInd = timeInd+1;  
         end
         startInd(w) = 1;
@@ -29,7 +33,9 @@ while true
         break;
         
     else
-%         disp('record has no data to associate with it!');
+        % This will be hit continuously if there is data from a previous
+        % day carried over into current day's file
+%         disp('record has no data to associate with it!'); 
         startInd(w) = -1; endInd(w) = -1; %may need to fix this!
         emptyWindows = [emptyWindows, w];
         w=w+1;

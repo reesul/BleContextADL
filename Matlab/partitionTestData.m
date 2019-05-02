@@ -1,5 +1,6 @@
 function [subsets, recordDecisions, naiveClassify] = partitionTestData(testingRecords, allPatterns, patternPr, shareContext, activities, epsilon)
 
+testLabels = testingRecords(end-1,:);
 
 subsets = cell(1, length(shareContext));
 recordDecisions = cell(size(testingRecords,2),2);
@@ -37,6 +38,7 @@ for i=1:size(testingRecords,2)
            recordDecisions{1,i} = j;
            validContext  = true;
            if ~any(ismember(testingRecords(end-1,i), contextSig))
+               
                break;
            end
            break;

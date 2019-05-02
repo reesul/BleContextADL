@@ -32,14 +32,21 @@ numUniqueDev = 0;
 windowSize = 60*1000; % in ms
 
 %% extract data from file and perform identfication to resolve random MACs
-
+subject=3
+if subject==1
 datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\20_day_set\'
+elseif subject==2
+datapath= 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Nan\'
+elseif subject == 3
+datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Ali\'
+end
+
 dataDirs = ls(datapath)
 blefile = 'ble_data.txt';
 
 
 % for d=1:size(dataDirs,1)
-for d=1:18 %build only on training set
+for d=1:length(dataDirs) %build only on training set
     if contains(dataDirs(d,:),'-')
         blePath = strcat(datapath,strtrim(dataDirs(d,:)));
         blePath = strcat(blePath,'\');
@@ -103,7 +110,15 @@ originalRecords = createRecords(datapath, cleanDevices, windowSize, cleanNumDev)
 save('records.mat',  'recognizedDevices', 'numUniqueDev', 'occurrenceMap', 'cleanOMap', 'cleanDevices', 'cleanNumDev', 'originalRecords', 'windowSize');
 
 %% Parse CSV file containing all labels and their start/end times
-csvData = readActivityCsv();
+csvPath=''
+if subject==1
+    csvPath = 'activityLabels_tuned.csv';
+elseif subject ==2
+    csvPath='activityLabels_Nandita.csv';
+elseif subject==3
+csvPath = 'activityLabels_Ali.csv';
+end
+csvData = readActivityCsv(csvPath);
 records = originalRecords;
 labels = getLabelVec(csvData, records);
 records = [records; labels];
@@ -112,12 +127,22 @@ nonnullLabelIndex = ~strcmp('null', records(end-1,:));
 records = records(:, nonnullLabelIndex);
 
 % activityLabelNames = {'biking', 'class', 'cooking', 'driving', 'eating', 'exercising', 'meeting', 'relaxing', 'research', 'schoolwork', 'walking'};
-activityLabelNames = {'biking', 'class', 'cooking', 'driving', 'exercising', 'meeting', 'research', 'schoolwork', 'walking'};
+if subject==1
+    activityLabelNames = {'biking', 'class', 'cooking', 'driving', 'exercising', 'meeting', 'research', 'schoolwork', 'walking'};
+    locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'classroom_zach-2', 'gym', 'home', 'lab', 'seminar_room'};
+elseif subject ==2
+%     activityLabelNames = {'class', 'cleaning', 'cooking', 'eating', 'exercising', 'getting_ready', 'meeting', 'phone call', 'relaxing', 'research', 'schoolwork', 'social event', 'walking'};
+    activityLabelNames = {'class', 'eating', 'exercising', 'getting_ready', 'meeting', 'phone call', 'relaxing', 'research', 'schoolwork', 'social event', 'walking'};
+locationLabelNames = {'ETB1', 'ETB2', 'home', 'lab', 'office_grad', 'seminar_room', 'social event', 'store', 'ZACH1', 'ZACH2'};
+elseif subject==3
+    activityLabelNames = {'class', 'cleaning', 'cooking', 'driving', 'eating', 'meeting', 'relaxing', 'research', 'schoolwork', 'self-hygiene', 'shopping', 'walking'};
+    locationLabelNames = {'ETB1', 'ETB2', 'ETB2_meeting', 'ETB3', 'ETB4', 'home', 'office_grad', 'seminar_room', 'STAT', 'store', 'ZACH1'};
+end
 
-locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'classroom_zach-2', 'gym', 'home', 'lab', 'seminar_room'};
 
 %% Extract features for IMU and heartrate
 
+%function below is improperly named; simply pulls raw data from the files
 rawSensorData = foregroundFeatures(records, datapath, windowSize); %only want the raw data from this, calculate features separately on next line
 
 [imuFeatures, imuTimes] = processIMU(records, rawSensorData, windowSize, {});
@@ -143,30 +168,41 @@ imuFeatures = normalize(imuFeatures, 'range');
 bleFeatures = normalize(bleFeatures, 'range');
 
 %% Separate into training and testing datasets
-split = 0.75;
+if subject==1
+    split = 0.75;
+    days = unique(finalRecords(1,:));
+    numTrainingDays = round(length(days)*split);
+    numTrainingDays = numTrainingDays - 1; %correct for the extra data I added
+    
+    %separate based on the number of days in the data
+    days = unique(finalRecords(1,:));
+    numTrainingDays = round(length(days)*split);
+    trainingDays = days(1:numTrainingDays);
 
-%separate based on the number of days in the data
-days = unique(finalRecords(1,:));
-numTrainingDays = round(length(days)*split);
-numTrainingDays = numTrainingDays - 1; %correct for the extra data I added
-trainingDays = days(1:numTrainingDays);
-
-endTrainIndex=1;
-while ismember(finalRecords(1,endTrainIndex), trainingDays)
-    endTrainIndex=endTrainIndex+1;   
+    endTrainIndex=1;
+    while ismember(finalRecords(1,endTrainIndex), trainingDays)
+        endTrainIndex=endTrainIndex+1;   
+    end
+    endTrainIndex=endTrainIndex-1; %correct for additional iteration
+    
+    trainingInds = [1:endTrainInd];
+    testingInds = [endTrainInd+1:size(records,2)];
+    
+else
+   [trainingInds, testingInds] = distributeLabels(finalRecords, activityLabelNames); 
 end
-endTrainIndex=endTrainIndex-1; %correct for additional iteration
 
-trainingRecords = finalRecords(:,1:endTrainIndex);
-testingRecords = finalRecords(:,endTrainIndex+1:end);
+
+trainingRecords = finalRecords(:,trainingInds);
+testingRecords = finalRecords(:,testingInds);
 
 %apply the same split to the other features
-imuFeaturesTrain = imuFeatures(1:endTrainIndex,:);
-imuFeaturesTest = imuFeatures(endTrainIndex+1:end,:);
-% hrFeaturesTrain = hrFeatures(1:endTrainIndex,:);
-% hrFeaturesTest = hrFeatures(i+endTrainIndex:end,:);
-bleFeaturesTrain = bleFeatures(1:endTrainIndex,:);
-bleFeaturesTest = bleFeatures(endTrainIndex+1:end,:);
+imuFeaturesTrain = imuFeatures(trainingInds,:);
+imuFeaturesTest = imuFeatures(testingInds,:);
+% hrFeaturesTrain = hrFeatures(trainingInds,:);
+% hrFeaturesTest = hrFeatures(testingInds,:);
+bleFeaturesTrain = bleFeatures(trainingInds,:);
+bleFeaturesTest = bleFeatures(testingInds,:);
 
 
 %% Augment set of records to test different behaviors of chosen methods

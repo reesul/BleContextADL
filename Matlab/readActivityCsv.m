@@ -1,8 +1,8 @@
 %this is for reading the csv file into a cell array
-function [csvData] = readActivityCsv() 
+function [csvData] = readActivityCsv(path) 
 
 
-csvF = fopen('activityLabels_tuned.csv','r');
+csvF = fopen(path,'r');
 
 csvData = cell(0,5);
 

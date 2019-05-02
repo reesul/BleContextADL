@@ -1,6 +1,6 @@
 %% augment the set of BLE records to demonstrate where HAC patterns and probability estimation is superior to other implementations
 % the use 'n' arguments are just for which scenario to apply 
-function [allRecords, trainRecords, testRecords] = augmentRecords(allRecords, trainRecords, testRecords, use1, use2, use3)
+function [allRecords, trainRecords, testRecords] = augmentRecords_v2(allRecords, trainRecords, testRecords, use1, use2, use3, subject)
 
 %% 1) Add personal device. Do this for records across many activities (but not necessarily 100% of instances). Should be done for testing and training data
 if use1
@@ -26,7 +26,9 @@ testRecords = allRecords(:,end-size(testRecords,2)+1:end);
 end
 %% 2) Add several beacons that are explicitly shared between multiple locations (I have location labels to aid us here) or activities. Do this for several beacons on different subsets of activities (possible to have overlap)
 if use2
+    
     %define some locations to share a beacon across
+    if subject==1
     l1 = {'lab', 'classroom_zach-1', 'seminar_room', 'classroom_etb-1'};
     l2 = {'classroom_wc', 'gym'};
     l3 = {'classroom_zach-2', 'classroom_etb-2'};
@@ -36,6 +38,30 @@ if use2
     l7 = {'classroom_etb-2', 'home'};
     locationPr = [0.5, 0.1, 0.2, 0.1, 0.2, 0.6];
     locations = {l1, l2, l3, l4, l6, l7};
+    elseif subject==2 %TODO: change these to fit 2nd subject's data
+        l1 = {'lab', 'classroom_zach-1', 'seminar_room', 'classroom_etb-1'};
+        l2 = {'classroom_wc', 'gym'};
+        l3 = {'classroom_zach-2', 'classroom_etb-2'};
+        l4 = {'office_grad', 'office_jafari', 'lab', 'seminar_room'};
+    %     l5 = {'seminar_room', 'office_jafari'};
+        l6 = {'classroom_etb-1', 'classroom_zach-1', 'gym'};
+        l7 = {'classroom_etb-2', 'home'};
+        locationPr = [0.5, 0.1, 0.2, 0.1, 0.2, 0.6];
+        locations = {l1, l2, l3, l4, l6, l7};
+    elseif subject==3 %TODO: change to fit 3rd subjects data
+        l1 = {'lab', 'classroom_zach-1', 'seminar_room', 'classroom_etb-1'};
+        l2 = {'classroom_wc', 'gym'};
+        l3 = {'classroom_zach-2', 'classroom_etb-2'};
+        l4 = {'office_grad', 'office_jafari', 'lab', 'seminar_room'};
+    %     l5 = {'seminar_room', 'office_jafari'};
+        l6 = {'classroom_etb-1', 'classroom_zach-1', 'gym'};
+        l7 = {'classroom_etb-2', 'home'};
+        locationPr = [0.5, 0.1, 0.2, 0.1, 0.2, 0.6];
+        locations = {l1, l2, l3, l4, l6, l7};        
+    end
+    
+    
+    
 %     location = {'lab','classroom_wc','classroom_zach-1','classroom_zach-2','seminar_room'}; % modify to change the shared beacons
     for k=1:length(locations)
         loc = locations{k};

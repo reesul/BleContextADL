@@ -4,6 +4,9 @@ features = [];
 dataWindows = cell(0,1);
 timeInfo = {};
 for i=1:size(rawSensorData,3)
+   
+    i
+    
     
    dayOfRawData = rawSensorData(:,:,i);
    r = dayOfRawData{4,1};

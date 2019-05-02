@@ -22,7 +22,7 @@ end
 TP_threshold = 0.97;
 Patterns={};
 % ruleSets = cell(length(activityLabelNames),1);
-for act = 1:9
+for act = 1:length(activityLabelNames)
     activity = act; % specify activity
 
     l = activityLabelNames{activity};

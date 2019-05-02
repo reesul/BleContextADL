@@ -19,9 +19,8 @@ for i = 1:n
 end
 % ---------------------------------------------------------------------------------------
 %%
-TP_threshold = 0.97;
 Patterns={};
-for act = 1:9
+for act = 1:length(activityLabelNames)
     activity = act; % specify activity
     
     l = activityLabelNames{activity};

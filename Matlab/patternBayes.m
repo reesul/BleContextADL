@@ -9,17 +9,18 @@ for i=1:size(ruleSets,1)
     rs = ruleSets{i};
 %     rs{:} = classLabels(i)
     originLabel = cell(size(rs,1), 1);
-    originLabel(:) = classLabels(i);
+%     originLabel = classLabels(i);
     if size(ruleSets{i},2)>size(ruleSets{i},1) %handle transposed patterns
-        mergedPatterns = [mergedPatterns; [ruleSets{i}', originLabel]];
+        mergedPatterns = [mergedPatterns; ruleSets{i}(1,:)'];
     else
         mergedPatterns = [mergedPatterns; [ruleSets{i}, originLabel]];
     end
 end
 
 rawPatterns = mergedPatterns;
-
-mergedPatterns = mergedPatterns(:,1:2);
+if size(mergedPatterns,2)>1
+    mergedPatterns = mergedPatterns(:,1:2);
+end
 noDuplicatePatterns = cell(0,2);
 %% Remove the duplicates from that merged set
 % There could be duplicate patterns learned from different activities

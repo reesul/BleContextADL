@@ -29,8 +29,8 @@ while r<=size(records,2)
     if d==size(dataDirs,1)
         lastR = size(records,2);
     else
-        lastR = r;
-        while strcmp(records{1,lastR}, date)
+        lastR = r
+        while lastR <= size(records,2) && strcmp(records{1,lastR}, date)
            lastR = lastR+1; 
         end
         lastR = lastR-1;

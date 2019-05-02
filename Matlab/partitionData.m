@@ -65,6 +65,7 @@ if nullInd
     finalSubsets(1,:) = subsets(nullInd,:); %copy the catch-all context signature as the first
 else
     finalSubsets(1,:) = cell(1,3);
+end
     
 for i=1:size(subsets,1)
     if i == nullInd

@@ -7,6 +7,9 @@ numInstances = sum(positives);
 acc_per = zeros(length(cm),1);
 for i=1:size(cm,2)
     acc_per(i) = cm(i,i)/positives(i);
+    if isnan(acc_per(i))
+        acc_per(i) = 0;
+    end
 end
 acc = mean(acc_per);
 wacc = sum(positives.*acc_per)/numInstances;
@@ -18,6 +21,9 @@ for i=1:size(cm,2)
     precision(i) = cm(i,i) / sum(cm(:,i));
     recall(i) = cm(i,i) / sum(cm(i,:));
     f1_per(i) = harmmean([precision(i), recall(i)]);
+    if isnan(f1_per(i))
+        f1_per(i) = 0;
+    end
 end
 
 f1 = mean(f1_per);
