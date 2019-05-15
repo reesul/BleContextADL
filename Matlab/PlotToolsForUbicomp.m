@@ -1,4 +1,6 @@
-%plotting tools for UbiComp submission
+%% plotting tools for UbiComp submission
+% This will probably need to be reused, especially the ones beyond the
+% first section. 
 
 %% horizontal bar graph showing number of performed activities
 % just change the following two lines, and then the title
@@ -25,7 +27,7 @@ labelNames=labelNames(check);
 
 showTrTe = 0;
 
-if ~showTrTe
+if ~showTrTe %show count for all activities
     tmp = countAct(end-2); countAct(end-2:end-1) = countAct(end-1:end); countAct(end) = tmp;
     tmp = labelNames(end-2); labelNames(end-2:end-1) = labelNames(end-1:end); labelNames(end) = tmp;
     barh(fliplr(countAct));
@@ -36,7 +38,7 @@ if ~showTrTe
     titleName = sprintf('Subject %d Activity Distribution', subject);
     title(titleName)
 
-else
+else %show training set and testing set counts to diagnose imbalance there
     counts = zeros(length(activityLabelNames),1);
     counts=counts';
     for i=1:length(counts)
@@ -62,14 +64,15 @@ else
     
 end
 %% comparison of input modalities
-singleClassifierResults = [0.548	0.657	0.762	0.791 0.809	0.83  0.87	0.9356; ...
-    0.68, 0.66, 0.78, 0.795, 0.82, 0.835,  0.843, 0.877; ...
-    0.61, 0.49, 0.77, 0.78, 0.73, 0.80, 0.82, 0.854]'
+%weighted f1-score
+singleClassifierResults = [0.548	0.657	0.762	0.791 0.809	0.83  0.87	0.9356; ... %subject 1
+    0.68, 0.66, 0.78, 0.795, 0.82, 0.835,  0.843, 0.877; ... %subject 2
+    0.61, 0.49, 0.77, 0.78, 0.73, 0.80, 0.82, 0.854]' %subject 3
 
 singleClassifierResults = [singleClassifierResults, mean(singleClassifierResults,2)]
 singleClassifierLabels = {'IMU only', 'BLE statistics', 'Beacons as binary features',...
     'BLE statistics, Beacons as features', 'IMU and BLE statistics', 'IMU, Beacons as features',  ...
-    'IMU, BLE statistics, Beacons as features', 'Our Method'}
+    'IMU, BLE statistics, Beacons as features', 'Our Method'} %same order as columns of results above
 
 bar(singleClassifierResults, 'grouped')
 ylabel('Weighted Average F-1 Score')
@@ -80,9 +83,9 @@ set(gca, 'xtick', 1:length(singleClassifierResults), 'xticklabel', singleClassif
 
 
 %% comparison of context-separation methods
-ContextSepResults = [0.87, 0.9323, 0.9323, .928, 0.9331, 0.9362; ...
-    0.84, 0.853, 0.853, .86, 0.87, 0.88; ...
-    0.82, 0.76, 0.76, 0.832, 0.824, 0.85]';
+ContextSepResults = [0.87, 0.9323, 0.9323, .928, 0.9331, 0.9362; ... %subject 1
+    0.84, 0.853, 0.853, .86, 0.87, 0.88; ...%subject 2
+    0.82, 0.76, 0.76, 0.832, 0.824, 0.85]'; %subject 3
 
 ContextSepResults = [ContextSepResults, mean(ContextSepResults,2)]; 
 
@@ -92,12 +95,12 @@ ContextSepLabels = {'Single Classifier', 'Basic Usage, Single-Beacon Patterns', 
 
 % Use this to change colors; make sure it will be distinguishable enough in
 % BW (different hue). DO THIS FOR ANY PLOT SHOWING MULIPLE SUBJECTS.
-colors = colormap([0 0 1; 1 1 0; 1 1 1])
+colors = colormap([0 0 1; 1 1 0; 1 1 1; 1 1 1]) %may need to change the color; use decimal number to specify r,g,b
 hb = bar(ContextSepResults, 'grouped')
 % hb(1).FaceColor = colors(1,:);
 % hb(2).FaceColor = colors(2,:);
 % hb(3).FaceColor = colors(3,:);
-
+% hb(4).FaceColor = colors(4,:);
 
 
 ylabel('Weighted Average F-1 Score')
@@ -109,9 +112,9 @@ ylim([0.70 1])
 
 %% Augmented data results
 
-ContextSepResults = [0.84, 0.82, 0.82, .902, .9133, 0.9336; ... %TODO update ACP, HAC (3rd)
-    0.80, 0.81, .81, .843, .855, .871; ...
-    0.80, 0.745, 0.745, 0.812, 0.824, 0.849]';
+ContextSepResults = [0.84, 0.82, 0.82, .902, .9133, 0.9336; ... %subject 1
+    0.80, 0.81, .81, .843, .855, .871; ... %subject 2
+    0.80, 0.745, 0.745, 0.812, 0.824, 0.849]'; %subject 3
 
 ContextSepResults = [ContextSepResults, mean(ContextSepResults,2)];
 
@@ -119,8 +122,6 @@ ContextSepLabels = {'Single Classifier', 'Basic Usage, Single-Beacon Patterns', 
     'ACP, HAC Patterns', 'ACP, Single-Beacon Patterns', ...
     'ACP, AHAC Patterns (Our Method)'};
 
-% ContextSepLabels = {'Naive, Single-Beacon Patterns', 'Probabilistic, Single-Beacon Patterns', ...
-%     'Probabilistic, AHAC Patterns'};
 
 % Use this to change colors; make sure it will be distinguishable enough in
 % BW (different hue). DO THIS FOR ANY PLOT SHOWING MULIPLE SUBJECTS.
@@ -140,7 +141,8 @@ set(gca, 'xtick', 1:length(ContextSepLabels), 'xticklabel', ContextSepLabels, 'X
 ylim([0.70 1])
 
 %% per-activity f1 for each subject, without and with context
-
+%note to future self: probably need to explicitly set the subject unless
+%importing the proper workspace
 if subject==1
     wwoContext = [0.727 0.737 0.608 0.666 	0.919 0.4	0.731 	0.608 ,0.826; ...
         0.7428 0.944 0.676 0.702 0.976 0.490 0.971 0.622 0.961];
@@ -164,7 +166,7 @@ legend('Without Context', 'With Context', 'Location', 'southoutside');
 set(gca, 'xtick', 1:length(ADLlabels), 'xticklabel', ADLlabels, 'XTickLabelRotation', 30)
 % set(gca, 'xtick', 1:length(ADLlabels), 'xticklabel', ADLlabels)
 
-%% augmented performance per activity
+%% augmented performance per activity per subject
 
 if subject==1
     contextSep = [0.759	0.877	0.000	0.339	0.978	0.378	0.869	0.853	0.605; ...

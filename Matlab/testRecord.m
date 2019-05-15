@@ -1,10 +1,9 @@
+%% retrives set of valid patterns for this record, and gets the corersponding columsn from the patternPr matrix
 function [Pr, validP] = testRecord(record, patterns, patternPr)
 
 patterns = patterns(:,1);
 Pr = [];
 validP = cell(1,0);
-
-
 
 for i=1:size(patterns,1)
     

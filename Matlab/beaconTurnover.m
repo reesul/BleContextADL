@@ -1,19 +1,23 @@
-%% Turnover measure of how the set of beacons in the user's range changes between windows of time
-% turnover 1 is on the entire set beacons, turnover2 is on the filtered set
-function [turnover1, turnover2] = beaconTurnover(MACs, pastMACs, oldR, newR)
+%% Turnover measure of how the set of beacons in the user's range changes between windows of time. Calculated with intersect over union
+function [turnoverUnfiltered, turnoverFiltered] = beaconTurnover(MACs, pastMACs, oldR, newR)
     
+    % first get unfiltered turnover
     MACs = unique(MACs);
     pastMACs = unique(pastMACs);
     
+    %calcualte intersection 
     numInCommon = length(intersect(MACs, pastMACs));
-    turnover1 = numInCommon / (length(MACs) + length(pastMACs) - numInCommon);
+    % intersect over union
+    turnoverUnfiltered = numInCommon / (length(MACs) + length(pastMACs) - numInCommon);
     
-    sumAnd=sum(bitand(oldR,newR));
-    sumOr = sum(bitor(oldR,newR));
+    % get filtered turnover. Simpler with the actual records than
+    % unfiltered
+    sumAnd=sum(bitand(oldR,newR)); %intersect
+    sumOr = sum(bitor(oldR,newR)); %union
     
-    turnover2 = sumAnd/sumOr;
-    if isnan(turnover2) 
-        turnover2=0;
+    turnoverFiltered = sumAnd/sumOr;
+    if isnan(turnoverFiltered)  %correct error of subsequently empty records
+        turnoverFiltered=0;
     end
    
 end

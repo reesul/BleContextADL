@@ -1,3 +1,4 @@
+%% get the labels to associate with a particular records timestamp
 function [activityLabel, locationLabel] = getLabel(csvData, date, timestamp)
 
 activityLabel = 'null';

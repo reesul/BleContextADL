@@ -1,5 +1,5 @@
+%% Sorted the ble window strings into temporal order
 function [sortedData, sortedTimes] = sortBleWindow(BleWindowStrs)
-%Sort a window of BLE data; return the data and times
 
 numDevices = size(BleWindowStrs,1);
 unsortedData = cell(0);

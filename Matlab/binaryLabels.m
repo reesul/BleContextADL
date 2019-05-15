@@ -1,13 +1,6 @@
+%return a logical vector indicating which records have the desired label.
 function [labels] = binaryLabels(targetLabel, labelOriginal)
 
-labels = zeros(1,length(labelOriginal));
-
-for i=1:length(labelOriginal)
-
-    if strcmp(targetLabel, labelOriginal(i))
-        labels(i) = 1;
-    end
-
-labels=logical(labels);
+labels = strcmp(targetLabel, labelOriginal);
     
 end

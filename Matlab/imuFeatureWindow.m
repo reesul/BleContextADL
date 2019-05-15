@@ -7,8 +7,7 @@ function [feat] = imuFeatureWindow(window, isAcc)
         feat = -inf*ones(1,numFeatures);
         return;
     end
-    %features in the time domain
-
+    %features in the time domain; straight-forward
     avg = mean(window,1);
     st_dev = std(window,1);
     root_mean = rms(window,1);
@@ -53,7 +52,8 @@ function [feat] = imuFeatureWindow(window, isAcc)
     pLen = length(psd);
     freq = Fs/N*ignorePsdInd : Fs/N : Fs/2;
     
-    %Take bins for 0-1 Hz (ignoring DC component, so 0+), 1-2, 2-5, and 5-10 
+    %Ignore: Take bins for 0-1 Hz (ignoring DC component, so 0+), 1-2, 2-5, and 5-10 
+    % Take bins for 0-0.5Hz, 0.5-1Hz, 1-2Hz, and 2-5. 
     bin_0_05 = mean(psd(1:round(pLen/20),:),1);
     bin_05_1 = mean(psd(round(pLen/20)+1:round(pLen/10),:),1);   
 %     bin_0_1 = mean(psd(1:round(pLen/10),:),1);	

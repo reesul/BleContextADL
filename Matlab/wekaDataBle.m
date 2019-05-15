@@ -1,4 +1,11 @@
+%% Writes files for Weka (machine learning prototyping platform) using the set of features and their corresponding labels. 
+% if isTrain is true, then '_training' is appended to the filename. Else,
+%   '_testing' is appended. Feature names do not need to be specified; these
+%   will just be called f# where # is the number of the feature. 
+% wekaDataOut is the folder the file is saved to. Be sure to change this!
 function [] = wekaDataBle(filename, features, labels, labelNames, isTrain)
+
+wekaDataOut = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\Processing\Classification\'; % CHANGE THIS
 
 for i=1:length(labels)
     labels(i) = strrep(labels(i), ' ', '_');
@@ -7,19 +14,10 @@ for i=1:length(labelNames)
      labelNames(i) = strrep(labelNames(i), ' ', '_');
 end
 
-%remove the records that have null activity labels
-% nonNullRecordsInd = ~strcmp(rawLabels(1,:), 'null');
-% records = records(:,nonNullRecords);
-
-% recordMtx = records(3,:);
-% recordMtx = cell2mat(recordMtx);
-% recordMtx = reshape(recordMtx,[length(records{3,1}),size(records,2)]);
-% featureSet = recordMtx'; %transpose so a single record is a row; (index as i,:) for whole record i
-
 numRecords = size(features, 1);
 numFeatures = size(features,2);
 
-wekaDataOut = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\Processing\Classification\';
+
 
 if isTrain
     s = [filename, '_training'];
@@ -39,19 +37,6 @@ end
 
 
 fArff = fopen(arffFileName, 'w');
-
-%first write the header of the .arff file, like relation and feature
-%names
-
-%names of the features
-% features = cell(1, numFeatures);
-% % features = {'mean', 'std', 'rms', 'mcr', 'var', 'int', 'skew', 'fft1', 'fft2', 'fft3'};
-% 
-% for i = 1:numFeatures
-%    
-%     features{i} = ['f', num2str(i)];
-%     
-% end
 
 fprintf(fArff, '@relation context\n\n');
 
@@ -89,8 +74,6 @@ for i=1:numRecords
     fprintf(fArff, '%s\n', labels{i});
 end
 
-
 fclose(fArff);
-
 
 end

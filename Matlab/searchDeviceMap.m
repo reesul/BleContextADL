@@ -1,3 +1,6 @@
+%% Search the set of recognized devices for a particular field and value pair.
+% note that if a name is searched for, it is fine to use ASCII input, as
+% those are stored as such. Otherwise, use HEX format
 function [MAC, value, device] = searchDeviceMap(recognizedDevices, searchField, searchValue)
 
 keys = recognizedDevices.keys();

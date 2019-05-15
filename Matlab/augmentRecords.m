@@ -1,128 +1,126 @@
 %% augment the set of BLE records to demonstrate where HAC patterns and probability estimation is superior to other implementations
 % the use 'n' arguments are just for which scenario to apply 
-function [allRecords, trainRecords, testRecords] = augmentRecords(allRecords, trainRecords, testRecords, use1, use2, use3)
+function [trainRecords, testRecords] = augmentRecords(trainRecords, testRecords, use1, use2, use3)
 
 %% 1) Add personal device. Do this for records across many activities (but not necessarily 100% of instances). Should be done for testing and training data
 if use1
     augmentPercentage = 0.85;
     %get the subset of beacons to add a 'personal device' to 
-    addBeaconInd = randperm(size(allRecords,2), round(size(allRecords,2)*augmentPercentage));
+    addBeaconInd = randperm(size(trainRecords,2), round(size(trainRecords,2)*augmentPercentage));
     
     %must add index either way to each record
-    for i=1:size(allRecords,2)
+    for i=1:size(trainRecords,2)
         %if we previously chose this index to add personal device to,
-        %indicate that beacon was present in the scan(i.e. '1')
+        %indicate that beacon was present in the scan(i.e. '1'). Must add
+        %to the record vector regardless to maintain constant size
         if ismember(i, addBeaconInd)
-            allRecords{3,i} = [allRecords{3,i}, 1];
+            trainRecords{3,i} = [trainRecords{3,i}, 1];
         else
-            allRecords{3,i} = [allRecords{3,i}, 0];
+            trainRecords{3,i} = [trainRecords{3,i}, 0];
             
         end
     end
     
-% make sure test and train sets reflect the changes here
-trainRecords = allRecords(:,1:size(trainRecords,2));
-testRecords = allRecords(:,end-size(testRecords,2)+1:end);
+    %randomly find the instances to add a beacon to
+    addBeaconInd = randperm(size(testRecords,2), round(size(testRecords,2)*augmentPercentage));
+    
+    for i=1:size(testRecords,2)
+        %if we previously chose this index to add personal device to,
+        %indicate that beacon was present in the scan(i.e. '1')
+        if ismember(i, addBeaconInd)
+            testRecords{3,i} = [testRecords{3,i}, 1];
+        else
+            testRecords{3,i} = [testRecords{3,i}, 0];
+            
+        end
+    end
+    
 end
 %% 2) Add several beacons that are explicitly shared between multiple locations (I have location labels to aid us here) or activities. Do this for several beacons on different subsets of activities (possible to have overlap)
 if use2
-    %define some locations to share a beacon across
+
     l1 = {'lab', 'classroom_zach-1', 'seminar_room', 'classroom_etb-1'};
     l2 = {'classroom_wc', 'gym'};
     l3 = {'classroom_zach-2', 'classroom_etb-2'};
     l4 = {'office_grad', 'office_jafari', 'lab', 'seminar_room'};
-    l5 = {'seminar_room', 'office_jafari'};
-    l6 = {'classroom_etb-1', 'classroom_zach-1', 'gym'};
-    l7 = {'classroom_etb-1', 'home'};
-    locations = {l1, l2, l3, l4, l5, l6, l7};
-%     location = {'lab','classroom_wc','classroom_zach-1','classroom_zach-2','seminar_room'}; % modify to change the shared beacons
+    l5 = {'classroom_etb-1', 'classroom_zach-1', 'gym'};
+    l6 = {'classroom_etb-2', 'home'};
+    locationPr = [0.5, 0.1, 0.2, 0.1, 0.2, 0.6];
+    locations = {l1, l2, l3, l4, l5, l6};
+    
+    %do for training set first
     for k=1:length(locations)
         loc = locations{k};
-        for i=1:size(allRecords,2)
-            if rand()>0.5 && ismember(string(allRecords{end,i}),loc) % change rand>0.5 to change probability of adding the new beacon
-                allRecords{3,i} = [allRecords{3,i}, 1];
+        for i=1:size(trainRecords,2)
+            % for a record, add a beacon if probability exceeds the one set
+            % for this location, and the actual context label is within the
+            % location set. Must add to record vector either way to
+            % mainintain constant size
+            if rand()>locationPr(k) && ismember(string(trainRecords{end,i}),loc)
+                trainRecords{3,i} = [trainRecords{3,i}, 1];
              else
-                allRecords{3,i} = [allRecords{3,i}, 0];
+                trainRecords{3,i} = [trainRecords{3,i}, 0];
             end
         end
     end
     
-% make sure test and train sets reflect the changes from here
-trainRecords = allRecords(:,1:size(trainRecords,2));
-testRecords = allRecords(:,end-size(testRecords,2)+1:end);
+    %do for testing set in the same way
+    for k=1:length(locations)
+        loc = locations{k};
+        for i=1:size(testRecords,2)
+            if rand()>locationPr(k) && ismember(string(testRecords{end,i}),loc) % change rand>0.5 to change probability of adding the new beacon
+                testRecords{3,i} = [testRecords{3,i}, 1];
+             else
+                testRecords{3,i} = [testRecords{3,i}, 0];
+            end
+        end
+    end
+    
 end
-%% 3) Modify test set such that beacons from a totally different context show up where they haven't before (e.g. a friend coming by work, seeing a colleague around town, etc.) i.e. unexpected behavior in test set
+%% 3) Modify test set such that highly consistent in the beacons (for the training set) in a particular context are removed (from the testing set)
 if use3
-    
-    
-% % add some beacons to share across a few locations
-% l1 = {'lab','office_grad', 'seminar_room', 'office_jafari'};
-% l2 = {'lab', 'classroom_zach-1', 'seminar_room', 'classroom_etb-1'};
-% l3 = {'classroom_etb-2', 'classroom_zach-2'};
-% locations = {l1, l2, l3};
-% %     location = {'lab','classroom_wc','classroom_zach-1','classroom_zach-2','seminar_room'}; % modify to change the shared beacons
-% for k=1:length(locations)
-%     loc = locations{k};
-%     for i=1:size(trainRecords,2)
-%         if rand()>0.5 && ismember(string(trainRecords{end,i}),loc) % change rand>0.5 to change probability of adding the new beacon
-%             trainRecords{3,i} = [trainRecords{3,i}, 1];
-%          else
-%             trainRecords{3,i} = [trainRecords{3,i}, 0];
-%         end
-%     end
-% end
-% 
-% % make sure size of test records reflects changes above
-% for i=1:size(testRecords,2)
-%     testRecords{3,i} = [testRecords{3,i}, zeros(1, length(locations))];
-% end
-%         
-% % add those same beacons randomly to a few different locations     
-% lt1 = 'gym';
-% lt2 = 'home';
-% lt3 = 'lab';
-% testLocations = {lt1, lt2, lt3};
-% for k=1:length(testLocations)
-%     loc = testLocations{k};
-%     %add these records in blocks to simulate actually seeing a person ,
-%     %rather than having those beacons randomly interspersed 
-%     block = false; blockSizeMax = 5; blockSize = 0; numBlocks =0; maxBlocks = 4; 
-%     for i=2:size(testRecords,2)
-%         if block && strcmp(testRecords(end,i), testRecords(end,i-1))
-%             testRecords{3,i}(end-k+1) = 1;
-%             blockSize = blockSize+1;
-%             if blockSize >= blockSizeMax
-%                 block=false;
-%             end
-%         elseif rand()>0.85 && strcmp(loc, testRecords{end,i})
-%             numBlocks = numBlocks+1;
-%             if numBlocks>maxBlocks
-%                 break;
-%             end
-%             testRecords{3,i}(end-length(testLocations)+k) = 1;
-%             blockSize = 1;
-%             block = true;
-%             
-%         end
-%     end
-% end
-for i=1:size(testRecords,2)
-    if rand()<0.2
-        check=0;
-        j = 1;
-        perm = randperm(size(testRecords{3,1},2));
-        while check==0 && j < size(testRecords{3},2)
-            p = perm(j);
-            if testRecords{3,i}(p) == 0 && rand()>0.5
-                testRecords{3,i}(p) = 1;
-                check=1;
-            end
-            j = j + 1;
-        end
+
+locations = unique(trainRecords(end,:));
+highCoverageBeacons = cell(length(locations),1);
+% for a = 1:length(activities)
+for a = 1:length(locations)
+
+%     ind = strcmp(trainRecords(end-1,:), activities{a});
+    ind = strcmp(trainRecords(end,:), locations{a});
+    if sum(ind)==0
+        continue;
     end
+    rMtx = recordMatrix(trainRecords(:,ind)); %get record matrix for these locations (contexts)
+    coverage= sum(rMtx,1);
+    [sortedCoverage,sortInd] = sort(coverage, 'descend');
+%     highCoverageBeacons{a,:} = sortInd(1:3)
+    highC = sortedCoverage > size(rMtx,1)*0.65; %find beacons present for at least 65% of instances for that set
+    highCoverageBeacons{a} = sortInd(highC);
+    
 end
     
-%make changes to test set, then be sure those are copied into the entire record set (for sake of completion)   
- allRecords(:,end-size(testRecords,2)+1:end) = testRecords;
+for i=1:size(testRecords,2)
+%     j = strcmp(activities, testRecords(end-1,i));
+    j = strcmp(locations, testRecords(end,i));
+    if ~any(j)
+        continue; 
+    end
+    
+    beac = highCoverageBeacons{j};
+    rec = testRecords{3,i};
+    
+    if rand() > 0.25
+        %with 25% chance, augment this record
+        for k=1:length(beac)
+            % with 50% chance, remove this beacon
+            if rec(beac(k)) && rand()>0.5
+                rec(beac(k)) = 0;
+            end
+        end
+    end
+    
+    testRecords{3,i} = rec;
+    
+end
 end
 end

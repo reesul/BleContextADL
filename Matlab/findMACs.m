@@ -1,3 +1,4 @@
+%% find MACs that exist for a particular device id (value field) within the map of recognzied Devices)
 function [MACs] = findMACs(deviceID, deviceMap)
 
 MACs = {};

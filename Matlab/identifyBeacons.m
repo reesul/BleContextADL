@@ -1,3 +1,11 @@
+%% Attempt to resolve differing MAC addresses into the same beacons by looking at what is happening in the advertisement packet
+% From the author Reese Grimsley: I would not recommend spending time on
+% this, unless you aim to get an entire paper from this alone. It is not a
+% trivial task, and I doubt that a single unified approach will work for
+% this. There is too much variation due to differing developers and their
+% (often shoddy) implementation of BLE advertising.
+% Nonetheless, perhaps this file would help anyone trying to develop
+% a method for this as it would massively help BLE context detection
 function [recognizedDevices, numUniqueDev] = identifyBeacons(bleData, recognizedDevices, numUniqueDev, similarityThreshold)
 
 for b=1:length(bleData)

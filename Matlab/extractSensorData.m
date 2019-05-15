@@ -1,5 +1,9 @@
-% function [accFeatures, gyroFeatures, heartrateFeatures, rawData] = foregroundFeatures(records, datapath, windowSize)
-function [rawData] = foregroundFeatures(records, datapath, windowSize)
+%% extracts the raw data from ACC, GYRO, and heartrate.
+% rawData is a cell array containing all values and timestamps as pulled
+% from files. The records of BLE are used for aligning some indices with
+% different days of data to use during feature extraction. Feature
+% extraction is done later.
+function [rawData] = extractSensorData(records, datapath)
 
 accfile = 'accelerometer_data.txt';
 gyrofile = 'gyroscope_data.txt';
@@ -38,7 +42,7 @@ while r<=size(records,2)
     
     %get features for this day of data, windows aligned to records
     datePath = [datapath,  dataDirs(d,:), '\'];
-    rawDaysData = dayOfData(records(:,r:lastR), datePath, windowSize);
+    rawDaysData = dayOfData(records(:,r:lastR), datePath);
 %     accFeatures = [accFeatures; aFeat];
 %     gyroFeatures = [gyroFeatures; gFeat];
 %     heartrateFeatures = [heartrateFeatures; hrFeat];
@@ -56,8 +60,7 @@ end
 
 end
 
-% function [aFeat, gFeat, hrFeat, rawData] = dayOfData(records, basepath, windowSize)
-function [rawData] = dayOfData(records, basepath, windowSize)
+function [rawData] = dayOfData(records, basepath)
     accfile = 'accelerometer_data.txt';
     gyrofile = 'gyroscope_data.txt';
     hrfile = 'ppg_data.txt';

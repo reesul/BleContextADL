@@ -1,3 +1,4 @@
+%% Find the intervals of precense for each beacon in the set of all device scans. Used later for cleaning up the set of beacons. 
 function [occurrenceMap] = occurrenceIntervals(bleData, recognizedDevices, occurrenceMap, d)
 windowSize = 1000*60*3; %3 minutes
 

@@ -1,3 +1,4 @@
+%% plots time and frequency (power) domain for each axis of ACC, GYRO signals
 function [] = plotIMU(gdata, adata, label, record)
     recordTime = record{2}
     recordDate = record{1}

@@ -1,6 +1,7 @@
 function [times] = getBleTimes(bleStr)
 %get individual time of scan for a single device's BLE entry in data from
-%the smart watch data-collection app
+%the smart watch data-collection app. There are likely multiple scans of
+%the same device, so multiple tiem stamps.
 
     
     %get the times

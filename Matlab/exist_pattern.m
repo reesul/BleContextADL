@@ -1,3 +1,4 @@
+%% check if a pattern already exists in the list for AHAC pattern extraction
 function bool = exist_pattern( pattern,list )
 m = length(list);
 bool = false;

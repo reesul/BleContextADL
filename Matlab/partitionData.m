@@ -1,3 +1,12 @@
+%% finds the set of activities that share context (shareContext sets) by looking at the probability of an activity given a pattern 
+% This looks at all patterns satisfied by a record, and the corresponding
+%   Pr(activity|pattern). For each activity, the mean of these probabilities
+%   is calcualted, and compared to a threshold (1+epsilon)/numActivities.
+%   This defines the sharedCotnext set.
+% The subsetsNotReduced set is the same at subsets in format, but 'subsets'
+%   removes the sharedContext sets that apply to more instances than the
+%   'sizeThreshold'. 'naiveClassify' outputs the activity with the highest
+%   mean probability, a rudimentary form of classification. 
 function [subsets, shareContext, subsetsNotReduced, naiveClassify] = partitionData(activityLabelNames, cTrainingRaw, sizeThreshold, epsilon)
 % find the activities that occur together that we would need to train
 % separate imu classifiers for

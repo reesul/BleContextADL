@@ -8,6 +8,8 @@ for i=1:size(rawSensorData,3)
    r = dayOfRawData{4,1};
    lastR = dayOfRawData{4,2};
    
+   %only process a single day's worth of data at a time, and concatenate to
+   %what was already processed
    [hrfeat, windowStartTime, windowEndTime, recordTimeStr] = dayOfData(dayOfRawData, records(:,r:lastR), windowSize);
    features = [features; hrfeat];
    timeInfo = [timeInfo; [recordTimeStr, windowStartTime, windowEndTime] ];

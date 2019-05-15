@@ -4,15 +4,15 @@ features = [];
 dataWindows = cell(0,1);
 timeInfo = {};
 for i=1:size(rawSensorData,3)
-   
-    i
-    
-    
+       
    dayOfRawData = rawSensorData(:,:,i);
    r = dayOfRawData{4,1};
    lastR = dayOfRawData{4,2};
    
+   %process only a single day of data at a time
    [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime, recordTimeStr, awindows, gwindows] = dayOfData(dayOfRawData, records(:,r:lastR), windowSize, activitiesToShow);
+   %concatenate the features, timing info, etc. onto what was previously
+   %there
    features = [features; [afeat, gfeat]];
    timeInfo = [timeInfo; [recordTimeStr, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime] ];
    dataWindows = [dataWindows; [awindows, gwindows]];
@@ -26,6 +26,7 @@ end
 
 function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwindowEndTime, recordTimeStr, aWindows, gWindows] = dayOfData(sensorData, records, windowSize, activitiesToShow)
 
+    % retrive raw data from cell array
     gdata = sensorData{1,1};
     gtime = sensorData{1,2};
     gtimeStr = sensorData{1,3};
@@ -45,9 +46,12 @@ function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwin
     aWindows = cell(length(recordTimes),1);
     gWindows = cell(length(recordTimes),1);
     
+    %initialize
     afeat = zeros(numWindows, length(imuFeatureWindow([], true)));
     gfeat = zeros(numWindows, length(imuFeatureWindow([], false)));
     
+    %get indices for the start and end of each window based on the start
+    %time of each record
     [gwindowStartInd, gwindowEndInd] = windowIndices(recordTimes, gtime, windowSize);
     [awindowStartInd, awindowEndInd] = windowIndices(recordTimes, atime, windowSize);
     
@@ -65,6 +69,7 @@ function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwin
         recordTimeStr{w} = num2date(recordTimes(w));
 
         if (gwindowStartInd(w)==-1 || gwindowEndInd(w)==-1) || (awindowStartInd(w)==-1 || awindowEndInd(w)==-1)
+            % handle null case
             gfeat(w,:) = imuFeatureWindow([], false);
             afeat(w,:) = imuFeatureWindow([], true);
             gwindowStartTime{w} = num2date(0);
@@ -80,12 +85,12 @@ function [afeat, gfeat, awindowStartTime, gwindowStartTime, awindowEndTime, gwin
         % get a window of data
         gwindow = gdata(gwindowStartInd(w):gwindowEndInd(w),:);
         awindow = adata(awindowStartInd(w):awindowEndInd(w),:);
-        
+        %get start and end timestamps
         gwindowStartTime{w} = num2date(gtime(gwindowStartInd(w)));
         gwindowEndTime{w} = num2date(gtime(gwindowEndInd(w)));
         awindowStartTime{w} = num2date(atime(awindowStartInd(w)));
         awindowEndTime{w} = num2date(atime(awindowEndInd(w)));
-        
+        %calculate fatures
         gfeat(w,:) = imuFeatureWindow(gwindow, false);
         afeat(w,:) = imuFeatureWindow(awindow, true);
         
@@ -190,7 +195,7 @@ end
 
 function [psd, freq] = getPSD(window)
 
-    ignoreInd = 20;
+    ignoreInd = 20; % for some reason, the DC componenet of PSD is always very large, as are many low frequency components
 
     Fs = 20; %sampled at about 20 hz
     N=2000; %

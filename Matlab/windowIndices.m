@@ -1,3 +1,6 @@
+%% Finds the window indices for the timestampes provided. These timestamps MUST all be sequential.
+% If this is failing, look at your data files to make sure there is no carryover 
+%   from another day(e.g. few minutes of data collected before midnight saved into the wrong folder) 
 function [startInd, endInd] = windowIndices(recordTimes, times, windowSize)
 
 %% initalize variables
@@ -13,16 +16,16 @@ emptyWindows = [];
 % dataStartWindowDone = true;
 while true
     
-    if timeInd > length(times) || w > length(recordTimes)
-       timeInd, recordTimes 
-    end
+%     if timeInd > length(times) || w > length(recordTimes) %for debugging
+%        timeInd, recordTimes 
+%     end
     
     if (times(timeInd) < recordTimes(w))
 %          disp('data starts before first record; move on');
          break;
         
     elseif (times(1) > recordTimes(w) && times(1) < endTimes(w))
-        while ~( (times(timeInd) <= endTimes(w)) && times(timeInd+1) > endTimes(w) )
+        while ~( (times(timeInd) <= endTimes(w)) && times(timeInd+1) > endTimes(w) ) %keep iterating until consecutive timestamps are found before and after expected end
             timeInd = timeInd+1;  
         end
         startInd(w) = 1;
@@ -49,7 +52,7 @@ end
 for w=w:numWindows
     % get the start index for this window first
 %    disp(w);
-   while ~( (times(timeInd) < recordTimes(w)) && times(timeInd+1) >= recordTimes(w) )
+   while ~( (times(timeInd) < recordTimes(w)) && times(timeInd+1) >= recordTimes(w) ) %iterate until timestamps found for just before and just after expected window end
             timeInd = timeInd+1;
             if (times(timeInd) > endTimes(w))
 %                disp('overshot; no acc data in this window')

@@ -1,3 +1,4 @@
+%% get the entire vector of labels based on all records
 function [labelVec] = getLabelVec(csvData, records)
 
 labelVec = cell(2,size(records,2));

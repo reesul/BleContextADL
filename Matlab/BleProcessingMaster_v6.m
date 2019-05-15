@@ -19,6 +19,7 @@
 %           first developed for this study).
 %  v6: Subject specific data processing; subject id set in the first couple
 %       lines
+%  v7: Added comments, improved generalization
 
 %% Options
 

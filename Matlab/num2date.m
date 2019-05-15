@@ -1,3 +1,4 @@
+%% convert a number to a timestamp; num is number of ms since midnight
 function [date] = num2date(num)
 
 ms = mod(num, 1000);

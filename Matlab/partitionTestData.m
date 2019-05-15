@@ -1,14 +1,16 @@
+%% finds which instances should be applied to which sharedContext sets provided after running 'partitionData'
+% Effectively the same as 'paritionData', but the sharedContexts are
+% already defined
 function [subsets, recordDecisions, naiveClassify] = partitionTestData(testingRecords, allPatterns, patternPr, shareContext, activities, epsilon)
 
 testLabels = testingRecords(end-1,:);
 
 subsets = cell(1, length(shareContext));
-recordDecisions = cell(size(testingRecords,2),2);
 naiveClassify = zeros(size(testingRecords,2),1);
 
 minP = (1+epsilon)/length(activities);
 
-useMax = false;
+useAbsMax = false;
 
 
 for i=1:size(testingRecords,2)
@@ -17,7 +19,7 @@ for i=1:size(testingRecords,2)
     recordDecisions{i,2} = satisfiedP;
     meanPr = mean(prMtx,2);
     
-    if useMax
+    if useAbsMax
         if size(prMtx,2) > 1
             [~,actWithMaxP] = max(max(prMtx,[], 2));
         else
@@ -35,7 +37,6 @@ for i=1:size(testingRecords,2)
     for j=1:length(shareContext)
        if isequal(contextSig, shareContext{j})
            subsets{j} = [subsets{j},i];
-           recordDecisions{1,i} = j;
            validContext  = true;
            if ~any(ismember(testingRecords(end-1,i), contextSig))
                

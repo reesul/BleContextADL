@@ -1,3 +1,4 @@
+%% Finds the device map (wihtin the entire map of devices) for a particular value, and displays information about that device
 function [] = findMapAndDisp(value, map)
 
 M = findMACs(value, map);

@@ -1,4 +1,5 @@
-function [recognizedDevices, numUniqueDev] = identifyMacOnly(bleData, recognizedDevices, numUniqueDev, similarityThreshold)
+%% function to identify all devices with unique MAC addresses, and save their information from the advertisement into a Map object.
+function [recognizedDevices, numUniqueDev] = identifyMacOnly(bleData, recognizedDevices, numUniqueDev)
 
 for b=1:length(bleData)
     
@@ -12,25 +13,15 @@ for b=1:length(bleData)
    %if true, MAC has been seen before
    if recognizedDevices.isKey(MAC)
        recDev = recognizedDevices(MAC);
-%        pInfo('value') = recDev('value');
        
        %modify device's dictionary/map
        recDev('scanNum') = recDev('scanNum') + 1;
        
-%      dispMap(recDev);
-%      dispMap(recognizedDevices(MAC));
       
     %MAC has not been seen before; create new device entry, but it could be
     % an instance of a past device (i.e. MAC changes)
    else
-       %try to calculate some similarity between pInfo and all devices seen
-       %previously; highest value and corresponding MAC are returned
-       %[similarity, existingMac] = findMatchBLE(pInfo, recognizedDevices);
-       %threshold the similarity
-       %if similarity >= similarityThreshold
-       %    pastDevice = recognizedDevices(existingMac); %assume this is the same device but with a new MAC
-       %    pInfo('value') = pastDevice('value'); %device will resolve to same value number (ID) as other MAC does
-           
+
        %else %if no device is similar enough, append an entirely new one to the map
        pInfo('value') = numUniqueDev+1 ; 
        numUniqueDev = numUniqueDev+1;

@@ -1,3 +1,6 @@
+%% gets the BLE statistical features. Most of these are created while creating records
+% First two are turnover, second two are device count. Filtered is
+% first, unfiltered second
 function [features] = statisticalBleFeat(records)
 
 features = zeros(size(records,2),4);
