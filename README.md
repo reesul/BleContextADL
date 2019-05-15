@@ -8,5 +8,3 @@ It is highly recommended to use the newest version of this script, _v7, as this 
 
 The main other script that will be useful is 'PlotToolsForUbicomp', as this contains hardcoded values used to generate the plots for a submission to IMWUT journal (which feeds into UbiComp). For whoever (Reese or Ali) works on responding to feedback, the values needed for those plots are already contained in that script. Look for the appropriate section to find whichever plot is needed
 
-#### Contact
-Reese Grimsley is the contributor of the vast majority of this repository. He would be the best person contact for questions about the code within this repository. At the writing of this README, he may be contacted via rgrimsley1795@gmail.com. 
