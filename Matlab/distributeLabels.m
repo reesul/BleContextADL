@@ -11,7 +11,9 @@ for l=1:length(labelNames)
     ind = find(binL);
     
     splitInd = round(length(ind)*split);
-    while strcmp(records(1,ind(splitInd)), records(1,ind(splitInd+1))) && strcmp(records(end-1,ind(splitInd)), records(end-1,ind(splitInd+1))) %make sure data is from different days
+    while strcmp(records(end-1,ind(splitInd)), records(end-1,ind(splitInd+1))) && ...
+            strcmp(records(1,ind(splitInd)), records(1,ind(splitInd+1))) && ... %make sure data is from different days
+            records{2,ind(splitInd)} - records{2,ind(splitInd+1)} < 1000*60*30 %or instances have a 30 minute separation 
         splitInd = splitInd+1;
         if splitInd+1 > length(ind)
             break;
@@ -20,7 +22,10 @@ for l=1:length(labelNames)
     
     if splitInd > 0.85*length(ind) %don't let it go too far
         splitInd = round(length(ind)*split);
-        while strcmp(records(1,ind(splitInd)), records(1,ind(splitInd+1))) && strcmp(records(end-1,ind(splitInd)), records(end-1,ind(splitInd+1))) %make sure data is from different days
+        while strcmp(records(end-1,ind(splitInd)), records(end-1,ind(splitInd+1))) && ...
+            strcmp(records(1,ind(splitInd)), records(1,ind(splitInd+1))) && ... %make sure data is from different days
+            records{2,ind(splitInd)} - records{2,ind(splitInd+1)} < 1000*60*30 %or instances have a 30 minute separation 
+           
             splitInd = splitInd-1;
             if splitInd <= 0
                 break;

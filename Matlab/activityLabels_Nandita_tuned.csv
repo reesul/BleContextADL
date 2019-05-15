@@ -1,0 +1,156 @@
+date,start_time,end_time,activity,location
+3/17/2019,15:35,15:43,walking,null
+3/17/2019,16:00,18:30,research,lab
+3/17/2019,18:51,19:00,walking,null
+3/18/2019,9:35,9:40,walking,null
+3/18/2019,12:50,13:35,class,ZACH1
+3/18/2019,15:20,15:55,research,office_grad
+3/18/2019,16:30,16:45,research,lab
+3/18/2019,17:05,18:00,research,lab
+3/19/2019,9:30,9:40,walking,null
+3/19/2019,9:50,10:25,research,office_grad
+3/19/2019,10:35,14:10,research,lab
+3/19/2019,14:25,15:30,class,ZACH2
+3/19/2019,15:38,15:42,walking,null
+3/19/2019,15:55,16:10,research,office_grad
+3/19/2019,16:25,19:00,research,lab
+3/19/2019,20:37,20:45,walking,null
+3/20/2019,11:00,12:15,research,office_grad
+3/20/2019,12:45,13:25,class,ZACH1
+3/20/2019,17:30,17:40,walking,null
+3/20/2019,17:50,19:10,research,lab
+3/20/2019,19:20,20:10,class,ZACH1
+3/20/2019,20:50,23:00,research,lab
+3/21/2019,11:00,11:08,walking,null
+3/21/2019,11:15,11:25,research,office_grad
+3/21/2019,11:35,12:15,meeting,seminar_room
+3/21/2019,12:35,14:05,research,office_grad
+3/21/2019,14:25,15:30,class,ZACH2
+3/21/2019,15:59,17:10,class,ETB1
+3/21/2019,19:40,20:45,research,lab
+3/21/2019,21:04,21:15,walking,null
+3/25/2019,10:20,12:20,research,office_grad
+3/25/2019,12:40,13:25,class,ZACH1
+3/25/2019,13:45,18:00,research,office_grad
+3/25/2019,18:25,20:10,social event,social event
+3/25/2019,20:30,23:59,research,lab
+3/26/2019,7:30,10:15,getting ready,home
+3/26/2019,10:32,10:40,walking,null
+3/26/2019,10:50,11:00,research,office_grad
+3/26/2019,11:10,13:50,research,lab
+3/26/2019,15:45,18:30,research,lab
+3/26/2019,18:45,19:45,research,office_grad
+3/27/2019,8:58,9:07,walking,null
+3/27/2019,9:15,12:25,research,lab
+3/27/2019,12:45,13:25,class,ZACH1
+3/27/2019,13:45,15:00,research,lab
+3/27/2019,15:15,16:00,meeting,lab
+3/27/2019,19:35,20:15,class,ZACH1
+3/27/2019,20:22,20:30,walking,null
+3/27/2019,22:11,22:30,cooking,home
+3/28/2019,8:46,8:55,exercising,home
+3/28/2019,8:59,9:05,getting ready,home
+3/28/2019,9:08,9:35,cooking,home
+3/28/2019,9:40,9:48,walking,null
+3/28/2019,10:00,11:20,research,office_grad
+3/28/2019,11:35,12:35,meeting,seminar_room
+3/28/2019,12:50,14:00,research,office_grad
+3/28/2019,14:25,15:20,class,ZACH1
+3/28/2019,15:59,17:10,class,ETB1
+3/28/2019,17:20,19:40,research,lab
+3/29/2019,10:03,10:13,walking,null
+3/29/2019,10:35,12:30,research,lab
+3/29/2019,12:45,13:25,class,ZACH1
+3/29/2019,13:50,15:50,research,lab
+3/29/2019,16:10,18:00,research,office_grad
+3/29/2019,19:25,19:35,walking,null
+3/29/2019,19:45,20:10,getting ready,home
+3/29/2019,20:18,20:40,exercising,home
+3/29/2019,20:48,23:59,relaxing,home
+3/30/2019,17:20,17:35,exercising,home
+3/31/2019,8:40,9:00,cooking,home
+3/31/2019,9:10,10:10,shopping,null
+3/31/2019,10:30,10:55,cleaning,home
+3/31/2019,14:54,15:03,walking,null
+3/31/2019,15:15,16:00,research,lab
+3/31/2019,16:10,18:00,research,office_grad
+3/31/2019,18:07,18:14,walking,null
+4/1/2019,9:45,9:52,walking,null
+4/1/2019,10:00,12:30,research,office_grad
+4/1/2019,12:50,13:30,class,ZACH1
+4/1/2019,13:45,18:30,research,office_grad
+4/1/2019,18:59,19:08,walking,null
+4/2/2019,10:22,10:30,walking,null
+4/2/2019,14:20,15:30,class,ZACH2
+4/3/2019,10:17,10:26,walking,null
+4/3/2019,12:50,13:30,class,ZACH1
+4/3/2019,16:16,16:24,walking,null
+4/3/2019,19:20,20:15,class,ZACH1
+4/3/2019,20:35,20:43,getting ready,home
+4/3/2019,20:45,23:59,exercising,home
+4/4/2019,9:46,9:55,walking,null
+4/4/2019,10:10,11:30,research,office_grad
+4/4/2019,11:35,12:15,meeting,seminar_room
+4/4/2019,14:20,15:30,class,ZACH2
+4/4/2019,15:55,17:00,class,ETB1
+4/4/2019,20:06,20:15,walking,null
+4/5/2019,10:00,10:09,walking,null
+4/5/2019,12:45,13:30,class,ZACH1
+4/5/2019,14:30,15:00,meeting,office_grad
+4/5/2019,18:35,18:45,walking,null
+4/8/2019,10:35,10:42,walking,null
+4/8/2019,10:50,12:30,research,office_grad
+4/8/2019,12:40,13:25,class,ETB1
+4/8/2019,19:05,19:15,walking,null
+4/9/2019,10:19,10:28,walking,null
+4/9/2019,11:45,13:25,research,office_grad
+4/9/2019,13:35,14:00,meeting,lab
+4/9/2019,14:20,15:30,class,ZACH2
+4/10/2019,10:50,10:58,walking,null
+4/10/2019,12:45,13:25,class,ZACH1
+4/10/2019,19:15,21:15,class,ZACH1
+4/11/2019,10:48,10:57,walking,null
+4/11/2019,11:05,11:28,research,office_grad
+4/11/2019,11:32,12:15,meeting,seminar_room
+4/12/2019,9:20,9:28,walking,null
+4/12/2019,12:15,12:38,meeting,office_grad
+4/13/2019,17:55,18:50,shopping,store
+4/13/2019,21:27,21:53,getting ready,home
+4/13/2019,22:00,23:59,social event,social event
+4/15/2019,10:31,10:40,walking,null
+4/15/2019,12:45,13:25,class,ZACH1
+4/16/2019,8:52,10:10,getting ready,home
+4/16/2019,10:15,10:25,walking,null
+4/16/2019,14:25,15:30,class,ZACH2
+4/17/2019,8:50,10:02,getting ready,home
+4/17/2019,10:10,10:15,walking,null
+4/17/2019,12:45,13:30,class,ZACH1
+4/17/2019,19:32,19:38,walking,null
+4/17/2019,19:45,20:40,getting ready,home
+4/25/2019,14:20,15:30,class,ZACH2
+4/25/2019,15:55,17:10,class,ETB1
+4/25/2019,17:20,21:00,social event,social event
+4/26/2019,10:43,10:46,getting ready,home
+4/26/2019,10:59,12:00,research,office_grad
+4/27/2019,16:00,16:50,getting ready,home
+4/27/2019,17:10,17:18,walking,null
+4/27/2019,17:22,18:20,social event,social event
+4/27/2019,19:10,20:55,social event,social event
+4/27/2019,21:03,21:18,walking,null
+4/27/2019,21:45,22:30,relaxing,home
+4/29/2019,9:01,9:30,getting ready,home
+4/29/2019,9:37,9:45,walking,null
+4/29/2019,12:45,13:30,class,ZACH1
+4/29/2019,13:42,13:57,walking,null
+4/30/2019,9:10,9:30,getting ready,home
+4/30/2019,9:36,9:42,walking,null
+4/30/2019,12:40,13:30,class,ZACH1
+5/1/2019,9:30,9:35,walking,null
+5/1/2019,10:29,11:00,social event,social event
+5/1/2019,12:50,12:55,walking,null
+5/1/2019,13:00,15:00,relaxing,home
+5/1/2019,15:04,15:13,walking,null
+5/1/2019,15:30,15:50,meeting,ETB5
+5/2/2019,10:00,10:05,getting ready,home
+5/2/2019,10:06,10:13,walking,null
+5/2/2019,11:35,12:15,meeting,seminar_room

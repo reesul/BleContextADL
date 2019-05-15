@@ -1,5 +1,12 @@
 function [] = wekaDataBle(filename, features, labels, labelNames, isTrain)
 
+for i=1:length(labels)
+    labels(i) = strrep(labels(i), ' ', '_');
+end
+for i=1:length(labelNames)
+     labelNames(i) = strrep(labelNames(i), ' ', '_');
+end
+
 %remove the records that have null activity labels
 % nonNullRecordsInd = ~strcmp(rawLabels(1,:), 'null');
 % records = records(:,nonNullRecords);

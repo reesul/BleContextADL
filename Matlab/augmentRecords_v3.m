@@ -49,18 +49,16 @@ if use2
     locationPr = [0.5, 0.1, 0.2, 0.1, 0.2, 0.6];
     locations = {l1, l2, l3, l4, l6, l7};
     
-    elseif subject==2 %TODO: change these to fit 2nd subject's data
-        l1 = {'lab', 'classroom_zach-1', 'seminar_room', 'classroom_etb-1'};
-        l2 = {'classroom_wc', 'gym'};
-        l3 = {'classroom_zach-2', 'classroom_etb-2'};
-        l4 = {'office_grad', 'office_jafari', 'lab', 'seminar_room'};
-    %     l5 = {'seminar_room', 'office_jafari'};
-        l6 = {'classroom_etb-1', 'classroom_zach-1', 'gym'};
-        l7 = {'classroom_etb-2', 'home'};
-        locationPr = [0.5, 0.1, 0.2, 0.1, 0.2, 0.6];
-        locations = {l1, l2, l3, l4, l6, l7};
+    elseif subject==2 
+        l1 = {'ETB1', 'seminar_room'};
+        l2 = {'office_grad', 'seminar_room'};
+        l3 = {'ZACH2', 'home'};
+        l5 = {'office_grad', 'lab'};
+        l6 = {'seminar_room', 'lab'};
+        locationPr = [0.4, 0.5, 0.3, 0.5, 0.2];
+        locations = {l1, l2, l3, l5, l6}; 
         
-    elseif subject==3 %TODO: change to fit 3rd subjects data
+    elseif subject==3 
         l1 = {'ETB1', 'office_grad', 'seminar_room'};
         l2 = {'ETB2, ETB2_meeting'};
         l3 = {'ETB3, home'};
@@ -127,6 +125,10 @@ end
 for i=1:size(testRecords,2)
 %     j = strcmp(activities, testRecords(end-1,i));
     j = strcmp(locations, testRecords(end,i));
+    if ~any(j)
+        continue; 
+    end
+    
     beac = highCoverageBeacons{j};
     rec = testRecords{3,i};
     

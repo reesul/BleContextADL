@@ -34,7 +34,7 @@ numUniqueDev = 0;
 windowSize = 60*1000; % in ms
 
 %% extract data from file and perform identfication to resolve random MACs
-subject=3
+subject=2
 if subject==1
 datapath = 'C:\Users\reesul\Documents\Activity_Recognition\Nearables\BLE_project_data\Reese\20_day_set\'
 elseif subject==2
@@ -116,7 +116,7 @@ csvPath=''
 if subject==1
     csvPath = 'activityLabels_tuned.csv';
 elseif subject ==2
-    csvPath='activityLabels_Nandita.csv';
+    csvPath='activityLabels_Nandita_tuned.csv';
 elseif subject==3
 csvPath = 'activityLabels_Ali_tuned.csv';
 end
@@ -134,11 +134,11 @@ if subject==1
     locationLabelNames = {'classroom_etb', 'classroom_wc', 'classroom_zach-1', 'classroom_zach-2', 'gym', 'home', 'lab', 'seminar_room'};
 elseif subject ==2
 %     activityLabelNames = {'class', 'cleaning', 'cooking', 'eating', 'exercising', 'getting_ready', 'meeting', 'phone call', 'relaxing', 'research', 'schoolwork', 'social event', 'walking'};
-    activityLabelNames = {'class', 'eating', 'exercising', 'getting_ready', 'meeting', 'phone call', 'relaxing', 'research', 'schoolwork', 'social event', 'walking'};
-locationLabelNames = {'ETB1', 'ETB2', 'home', 'lab', 'office_grad', 'seminar_room', 'social event', 'store', 'ZACH1', 'ZACH2'};
+    activityLabelNames = {'class', 'exercising', 'getting ready', 'meeting', 'research', 'shopping', 'walking'};
+locationLabelNames = {'ETB1', 'ETB2', 'home', 'lab', 'office_grad', 'seminar_room', 'store', 'ZACH1', 'ZACH2'};
 elseif subject==3
 %     activityLabelNames = {'class', 'cleaning', 'cooking', 'driving', 'eating', 'meeting', 'relaxing', 'research', 'schoolwork', 'shopping', 'walking'};
-    activityLabelNames = {'class', 'cleaning', 'driving', 'eating', 'meeting', 'relaxing', 'research', 'shopping', 'walking'};
+    activityLabelNames = {'class', 'cleaning', 'driving', 'eating', 'meeting', 'research', 'relaxing', 'shopping', 'walking'};
     locationLabelNames = {'ETB1', 'ETB2', 'ETB2_meeting', 'ETB3', 'ETB4', 'home', 'office_grad', 'seminar_room', 'STAT', 'store', 'ZACH1'};
 end
 
@@ -189,8 +189,10 @@ if subject==1
     end
     endTrainIndex=endTrainIndex-1; %correct for additional iteration
     
-    trainingInds = [1:endTrainInd];
-    testingInds = [endTrainInd+1:size(records,2)];
+    trainingInds = false(1,size(finalRecords,2));
+    testingInds = false(1,size(finalRecords,2));
+    trainingInds(1:endTrainIndex) = true;
+    testingInds(endTrainIndex+1:size(finalRecords,2)) = true;
     
 else
    [trainingInds, testingInds] = distributeLabels(finalRecords, activityLabelNames); 
@@ -218,7 +220,7 @@ use3 = true;
 % [augRecords, augTrainRecords, augTestRecords] = augmentRecords_v2(finalRecords, trainingRecords, testingRecords, use1, use2, use3, subject);
 [augTrainRecords, augTestRecords] = augmentRecords_v3(trainingRecords, testingRecords, use1, use2, use3, subject);
 
-useAugmented = true;
+useAugmented = false;
 if useAugmented
 %     finalRecords = augRecords;
     trainingRecords = augTrainRecords;
@@ -226,13 +228,13 @@ if useAugmented
 end
 
 %% HAC methods of pattern extraction
-IOUthreshold = 0.65;
+IOUthreshold = 0.60;
 Patterns_Single = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, 0.75, true);
 % Patterns_HAC = clusterRecordsFunc(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, false);
 Patterns_HAC = clusterRecordsFunc_v2(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, false);
 Patterns_AHAC = clusterRecordsFunc_v3(trainingRecords(end-1,:)', recordMatrix(trainingRecords), activityLabelNames, IOUthreshold, false);
 %% Calculate Bayesian probabilities and resulting 3-d matrix to represent (2-D for each record) the probability of P(activity | pattern)
-patternMethod = 0; %0 is single-beacon pattern, 2 is AHAC (our method), and 2 is HAC
+patternMethod = 2; %0 is single-beacon pattern, 1 is AHAC (our method), and 2 is HAC
 
 if patternMethod == 0
     ruleSets = Patterns_Single;
@@ -263,9 +265,9 @@ appliedPatterns = cTrainingRaw(:,3);
 
  %minimum number of instances for a subset to be valid, otherwise consider
  %it an outlier, and that it has no context
-sizeThreshold = 50;
-naive = true; %if true, no ACP
-useLocation = false; 
+sizeThreshold = round(0.01*size(trainingRecords,2));
+naive = 0; %if true, no ACP
+useLocation = 0; 
 exactTrainingSet = false;
 epsilon = 0.25; %parameter to reduce sensitivity to beacons that are very prevalent; achieve finer context separation
 
@@ -315,9 +317,14 @@ for i=1:size(classifierIndSets,1)
             end
 
         end
-
-        if isempty(labels) || any(strcmp(labels, 'null')) 
-            ind = true(size(trainingRecords,2),1);
+        if useLocation
+            if isempty(labels)
+                ind=true(size(trainingRecords,2),1);
+            end
+        else
+            if isempty(labels) || any(strcmp(labels, 'null')) 
+                ind = true(size(trainingRecords,2),1);
+            end
         end
 
         classifierIndSets{i,1} = ind;
@@ -336,8 +343,6 @@ for i=1:size(classifierIndSets,1)
     classifierLabels{i,2} = testingRecords(end-1, tstInd)';
 
 end
-    
- 
 
 %% Generate files for Weka
 
@@ -345,7 +350,7 @@ end
 % featTest = removeEmptyInstances([imuFeaturesTest, contextFeaturesTest]);
 % featTrain = [imuFeaturesTrain, contextFeaturesTrain];
 % featTest = [imuFeaturesTest, contextFeaturesTest];
-contextSeparate = false;
+contextSeparate = 0;
 pre = '';
 if subject==1
     pre='Reese\';
@@ -357,7 +362,7 @@ end
 
 if contextSeparate
     for i=1:size(classifierFeatureSets,1)
-        filename = [pre, 'Single+Basic_aug\'];
+        filename = [pre, 'HAC+ACP_aug\'];
         labels = sharedContextLabels{i};
 
         if isempty(labels)
@@ -375,14 +380,14 @@ if contextSeparate
     end
 
 else
-    featTrain = [imuFeaturesTrain, recordMatrix(trainingRecords), bleFeaturesTrain];%beacons as features
-    featTest = [imuFeaturesTest,  recordMatrix(testingRecords), bleFeaturesTest];
-%     featTrain = [bleFeaturesTrain, recordMatrix(trainingRecords)];%only ble and imu as features
+%     featTrain = [imuFeaturesTrain, recordMatrix(trainingRecords), bleFeaturesTrain];%beacons as features
+%     featTest = [imuFeaturesTest,  recordMatrix(testingRecords), bleFeaturesTest];
+%     featTrain = [bleFeaturesTrain, recordMatrix(trainingRecords)];%only ble  features
 %     featTest = [bleFeaturesTest, recordMatrix(testingRecords)];
-%     featTrain = [imuFeaturesTrain, bleFeaturesTrain];%beacons as features
-%     featTest = [imuFeaturesTest,  bleFeaturesTest];
+    featTrain = [imuFeaturesTrain, bleFeaturesTrain];%ble & imu
+    featTest = [imuFeaturesTest,  bleFeaturesTest];
 
-    filename = [pre,'singleClassifierAll'];
+    filename = [pre,'singleClassifier_IMU_BStats'];
 
     wekaDataBle(filename, featTrain, trainingRecords(end-1,:), activityLabelNames, true); %what about removed instances for the labels???? TODO
     wekaDataBle(filename, featTest, testingRecords(end-1,:), activityLabelNames, false);
